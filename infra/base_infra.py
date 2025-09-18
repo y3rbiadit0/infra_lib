@@ -3,7 +3,7 @@ from pathlib import Path
 import logging
 from typing import Dict
 
-from .enums import Environment
+from ..enums import Environment
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

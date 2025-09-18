@@ -5,7 +5,7 @@ from mypy_boto3_apigateway import APIGatewayClient
 
 from .boto_client_factory import BotoClientFactory
 from .aws_services_enum import AwsService
-from ..enums import Environment
+from ...enums import Environment
 from .creds import CredentialsProvider
 
 logger = logging.getLogger(__name__)

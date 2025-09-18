@@ -5,7 +5,7 @@ import boto3
 import logging
 
 from .aws_services_enum import AwsService
-from ..enums import Environment
+from ...enums import Environment
 from .creds import CredentialsProvider
 
 

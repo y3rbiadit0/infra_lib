@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from ....utils import run_command
+from .....utils import run_command
 from .base_runner import BuildRunner
 
 

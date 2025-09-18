@@ -9,7 +9,7 @@ from mypy_boto3_lambda.literals import RuntimeType
 
 
 from ..boto_client_factory import AwsService, BotoClientFactory
-from ...enums import Environment
+from ....enums import Environment
 from ..creds import CredentialsProvider
 from .build_runner import RUNTIME_BUILDERS
 
