@@ -1,0 +1,41 @@
+services:
+  localstack:
+    profiles: ["local", "stage"]
+    image: localstack/localstack:4.7.0
+    container_name: localstack
+    ports:
+      - "4566:4566"  # AWS services endpoint
+      - "4510-4559:4510-4559"
+    environment:
+      - SERVICES=s3,sqs,events,secretsmanager,cloudformation,apigateway,lambda
+      - DEBUG=1
+      - DATA_DIR=/tmp/localstack/data
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  lambda-debug:
+    profiles: ["local"]
+    build:
+      context: ../../
+      dockerfile: infrastructure/dev/Dockerfile.debug
+      args:
+        NET_PROJECT: {{ net_project }}
+    container_name: lambda-debug-{{ net_project }}
+    ports:
+      - "5005:5005"  # Debugger attach port for VSCode
+      - "5000:5000"  # Local Proxy to trigger lambda functions
+    environment:
+      - TARGET_ENV={{ target_env }}
+      - AWS_ENDPOINT_URL={{ aws_endpoint_url }}
+      - AWS_DEFAULT_REGION={{ aws_default_region }}
+      - AWS_ACCESS_KEY_ID={{ aws_access_key_id }}
+      - AWS_SECRET_ACCESS_KEY={{ aws_secret_access_key }}
+      - LOCALSTACK_SECRETS_MANAGER_URL={{ localstack_secrets_manager_url }}
+      - REGULATION_SQS={{ regulation_sqs }}
+      - DDDPARSER_SQS={{ dddparser_sqs }}
+      - DDD_BUCKET={{ ddd_bucket }}
+      - DOTNET_USE_POLLING_FILE_WATCHER=1
+      - DOTNET_RUNNING_IN_CONTAINER=true
+    depends_on:
+      - localstack

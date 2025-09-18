@@ -1,0 +1,24 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG NET_PROJECT
+WORKDIR /build
+
+COPY . .
+
+RUN dotnet publish {{ net_project }}/{{ net_project }}.csproj \
+    -c Debug -o out /p:DebugType=portable /p:DebugSymbols=true
+
+# Symlink for consistent runtime entry
+WORKDIR /build/out
+RUN ln -s {{ net_project }}.dll MainApp.dll
+
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS debug
+WORKDIR /app
+COPY --from=build /build/out .
+
+# Install VSDBG debugger for remote debugging
+RUN apt-get update && apt-get install -y unzip curl \
+    && mkdir -p /vsdbg \
+    && curl -sSL https://aka.ms/getvsdbgsh | bash /dev/stdin -v latest -l /vsdbg
+
+ENTRYPOINT ["dotnet", "MainApp.dll"]
