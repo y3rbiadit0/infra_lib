@@ -1,7 +1,22 @@
 [project]
-name = "infra-lib"
-version = "0.1.0"
-description = "Add your description here"
+name = "infra_lib"
+version = "0.0.1"
+description = "Python library for Infrastructure-as-Code orchestration"
+authors = [
+    { name="Franco N. Merenda", email="merenda.franco83@gmail.com" }
+]
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "boto3>=1.40.33",
+    "boto3-stubs[apigateway,cloudformation,ecr,iam,kinesis,lambda,s3,schemas,secretsmanager,signer,sqs,stepfunctions,sts,xray]>=1.39.7",
+    "click>=8.1.8",
+    "python-dotenv>=1.1.1",
+]
+
+[project.scripts]
+infra-cli = "infra_lib.runner_cli:build_env"
+
+[build-system]
+requires = ["setuptools>=65.5.0", "wheel"]
+build-backend = "setuptools.build_meta"
