@@ -1,6 +1,9 @@
+from pathlib import Path
+
 from .....enums import InfraEnvironment
 from .base_template_handler import BaseTemplateHandler
 from .template_file import TemplateFile
+from .util import context_prompter
 
 
 class AWSNet8TemplateHandler(BaseTemplateHandler):
@@ -26,6 +29,6 @@ class AWSNet8TemplateHandler(BaseTemplateHandler):
             TemplateFile(
                 source=self.templates_dir / InfraEnvironment.local / "Dockerfile.debug.j2",
                 target=self.project_root / "infrastructure" / InfraEnvironment.local / "Dockerfile.debug",
-                context_provider=lambda: {"project_name": "my-net8-app", "debug_port": 5005},
+                context_provider=lambda: context_prompter(self.templates_dir / InfraEnvironment.local / "Dockerfile.debug.j2"),
             )
         ]
