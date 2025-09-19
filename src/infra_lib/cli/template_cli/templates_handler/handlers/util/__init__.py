@@ -1,1 +1,1 @@
-from .context_env_cli import context_prompter
+from .context_prompter import GenericContextPrompter, NETContextPrompter
