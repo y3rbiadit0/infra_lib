@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import Callable, Dict, Optional
-from jinja2 import Environment as JinjaEnvironment, FileSystemLoader
+from jinja2 import Environment as JinjaEnvironment
 
 class TemplateFile:
     def __init__(

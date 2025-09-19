@@ -1,4 +1,5 @@
 from pathlib import Path
+
 from .base_template_handler import BaseTemplateHandler
 
 class AWSGenericTemplateHandler(BaseTemplateHandler):
