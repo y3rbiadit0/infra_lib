@@ -5,7 +5,7 @@ import logging
 
 from jinja2 import Environment as JinjaEnvironment, FileSystemLoader
 
-from .....enums import Environment
+from .....enums import InfraEnvironment
 from .template_file import TemplateFile
 
 logger = logging.getLogger(__name__)
@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 class BaseTemplateHandler(ABC):
-    environments = [e.value for e in Environment]
+    environments = [e.value for e in InfraEnvironment]
 
     def __init__(self, templates_dir: Path, project_root: Path, stack_type: str, provider: str = ""):
         self.templates_dir = templates_dir

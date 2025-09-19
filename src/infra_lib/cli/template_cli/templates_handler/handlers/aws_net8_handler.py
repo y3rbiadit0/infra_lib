@@ -1,4 +1,4 @@
-from .....enums import Environment
+from .....enums import InfraEnvironment
 from .base_template_handler import BaseTemplateHandler
 from .template_file import TemplateFile
 
@@ -24,8 +24,8 @@ class AWSNet8TemplateHandler(BaseTemplateHandler):
     def get_extra_files(self, env: str):
         return [
             TemplateFile(
-                source=self.templates_dir / Environment.local / "Dockerfile.debug.j2",
-                target=self.project_root / "infrastructure" / Environment.local / "Dockerfile.debug",
+                source=self.templates_dir / InfraEnvironment.local / "Dockerfile.debug.j2",
+                target=self.project_root / "infrastructure" / InfraEnvironment.local / "Dockerfile.debug",
                 context_provider=lambda: {"project_name": "my-net8-app", "debug_port": 5005},
             )
         ]
