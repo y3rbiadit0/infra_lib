@@ -48,17 +48,27 @@ class EnvBuilder:
         else:
             self.environment = environment
 
-        # Environment-specific folder
-        self.environment_dir = self.project_root / self.environment.value
-        if not self.environment_dir.exists():
-            raise FileNotFoundError(f"Environment folder {self.environment_dir} not found")
-
         self.env_vars = self._load_env()
 
-        # Docker Compose file assumed at project root
-        self.compose_file = self.project_root / "docker-compose.yml"
-        if not self.compose_file.exists():
-            raise FileNotFoundError(f"Docker Compose file {self.compose_file} not found")
+    @property
+    def environment_dir(self):
+        environment_dir = self.project_root / self.environment.value
+        if not environment_dir.exists():
+            raise FileNotFoundError(f"Environment folder {environment_dir} not found")
+        return environment_dir
+
+    @property
+    def compose_file(self):
+        compose_path = self.project_root / "docker-compose.yml"
+        if not compose_path.exists():
+            raise FileNotFoundError(f"Docker Compose file {compose_path} not found")
+        return compose_path
+
+    def execute(self, infra_builders: Optional[List[BaseInfraBuilder]] = None):
+        """Run the full workflow: Docker Compose + infrastructure."""
+        logger.info(f"DEVELOPMENT_MODE={self.environment.value}")
+        self._run_docker_compose()
+        self._build_infra(infra_builders=infra_builders)
 
     def _load_env(self) -> Dict:
         """Load environment variables from .env file in environment folder."""
@@ -74,7 +84,9 @@ class EnvBuilder:
     def _run_docker_compose(self):
         """Stop, build, and start Docker Compose containers."""
         logger.info("🛑 Stopping containers and removing volumes...")
-        run_command(f"docker-compose -p {self.compose_name} down -v", env_vars=self.env_vars)
+        run_command(
+            f"docker-compose -p {self.compose_name} down -v", env_vars=self.env_vars
+        )
 
         logger.info("🚀 Building containers...")
         run_command(
@@ -101,33 +113,11 @@ class EnvBuilder:
         if infra_builders is None:
             infra_builders = [self._load_infra_builder()]
 
-        
         for builder in infra_builders:
             if not isinstance(builder, BaseInfraBuilder):
                 raise TypeError(f"Expected BaseInfraBuilder, got {type(builder)}")
             logger.info(f"🏗 Running builder: {builder.__class__.__name__}")
             builder.build()
-
-    # def _load_infra_builder(self) -> BaseInfraBuilder:
-    #     """Dynamically import the infra script for the current environment."""
-    #     infra_file = self.environment_dir / f"infra_{self.environment.value}.py"
-    #     if not infra_file.exists():
-    #         raise FileNotFoundError(f"Infra file {infra_file} not found")
-
-    #     spec = importlib.util.spec_from_file_location("infra_module", infra_file)
-    #     module = importlib.util.module_from_spec(spec)
-    #     print(module)
-    #     spec.loader.exec_module(module)
-
-    #     class_name = f"{self.environment.value.capitalize()}Infra"
-    #     infra_class = getattr(module, class_name)
-    #     return infra_class(
-    #         infrastructure_dir=self.project_root,
-    #         projects_dir=self.project_root,
-    #         environment=self.environment,
-    #         env_vars=self.env_vars,
-    #     )
-    
 
     def _load_infra_builder(self) -> BaseInfraBuilder:
         """Dynamically loads the environment-specific infrastructure class.
@@ -169,9 +159,3 @@ class EnvBuilder:
             environment=self.environment,
             env_vars=self.env_vars,
         )
-
-    def execute(self, infra_builders: Optional[List[BaseInfraBuilder]] = None):
-        """Run the full workflow: Docker Compose + infrastructure."""
-        logger.info(f"DEVELOPMENT_MODE={self.environment.value}")
-        self._run_docker_compose()
-        self._build_infra(infra_builders=infra_builders)
