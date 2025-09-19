@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import sys
 from dotenv import load_dotenv
 from typing import Dict, List, Optional
 import logging
@@ -107,17 +108,59 @@ class EnvBuilder:
             logger.info(f"🏗 Running builder: {builder.__class__.__name__}")
             builder.build()
 
+    # def _load_infra_builder(self) -> BaseInfraBuilder:
+    #     """Dynamically import the infra script for the current environment."""
+    #     infra_file = self.environment_dir / f"infra_{self.environment.value}.py"
+    #     if not infra_file.exists():
+    #         raise FileNotFoundError(f"Infra file {infra_file} not found")
+
+    #     spec = importlib.util.spec_from_file_location("infra_module", infra_file)
+    #     module = importlib.util.module_from_spec(spec)
+    #     print(module)
+    #     spec.loader.exec_module(module)
+
+    #     class_name = f"{self.environment.value.capitalize()}Infra"
+    #     infra_class = getattr(module, class_name)
+    #     return infra_class(
+    #         infrastructure_dir=self.project_root,
+    #         projects_dir=self.project_root,
+    #         environment=self.environment,
+    #         env_vars=self.env_vars,
+    #     )
+    
+
     def _load_infra_builder(self) -> BaseInfraBuilder:
-        """Dynamically import the infra script for the current environment."""
-        infra_file = self.environment_dir / f"infra_{self.environment.value}.py"
-        if not infra_file.exists():
-            raise FileNotFoundError(f"Infra file {infra_file} not found")
+        """Dynamically loads the environment-specific infrastructure class.
 
-        spec = importlib.util.spec_from_file_location("infra_module", infra_file)
+        This function imports the `infrastructure` package directly from the
+        given `project_root` directory, without requiring it to be installed
+        as a Python package. By doing this, developers can run the CLI from
+        any working directory and still import `infrastructure` locally.
+
+        The function then looks up an environment-specific entry point class
+        inside the `infrastructure` package. The class name is derived from
+        the current environment, with the convention:
+
+            - Local → LocalInfra
+            - Stage → StageInfra
+            - Prod  → ProdInfra
+
+        Returns:
+            BaseInfraBuilder: The environment-specific infrastructure builder
+            class (e.g., `StageInfra`, `ProdInfra`, etc.), initialized with
+            the current project configuration.
+
+        Raises:
+            AttributeError: If the expected environment class (e.g.
+                "StageInfra") is not found inside the `infrastructure` package.
+            FileNotFoundError: If the `__init__.py` file cannot be located at
+                the expected path.
+        """
+        module_path = os.path.join(self.project_root, "__init__.py")
+        spec = importlib.util.spec_from_file_location("infrastructure", module_path)
         module = importlib.util.module_from_spec(spec)
-        print(module)
+        sys.modules["infrastructure"] = module
         spec.loader.exec_module(module)
-
         class_name = f"{self.environment.value.capitalize()}Infra"
         infra_class = getattr(module, class_name)
         return infra_class(
