@@ -1,0 +1,1 @@
+from .template_cli import template_cli

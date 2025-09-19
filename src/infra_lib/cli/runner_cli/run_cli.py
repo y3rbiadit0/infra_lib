@@ -5,13 +5,13 @@ import logging
 import click
 
 from .env_builder import EnvBuilder
-from ..enums import Environment
+from ...enums import Environment
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-@click.command()
+@click.command("run")
 @click.option(
     "--project",
     type=str,
@@ -24,7 +24,7 @@ logging.basicConfig(level=logging.INFO)
     default=Environment.local.value,
     help="Environment to deploy (local, stage, prod)",
 )
-def build_env(project: str, environment: str):
+def run_infra(project: str, environment: str):
     """CLI runner to spin up Docker Compose and deploy environment-specific infrastructure."""
     try:
         env = Environment(environment)
@@ -39,4 +39,4 @@ def build_env(project: str, environment: str):
 
 
 if __name__ == "__main__":
-    build_env()
+    run_infra()

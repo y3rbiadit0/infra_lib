@@ -15,7 +15,7 @@ dependencies = [
 ]
 
 [project.scripts]
-infra-cli = "infra_lib.runner_cli:build_env"
+infra-cli = "infra_lib.cli:infra_cli"
 
 [build-system]
 requires = ["setuptools>=65.5.0", "wheel"]
