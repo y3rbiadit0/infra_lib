@@ -6,7 +6,7 @@
       "type": "debugpy",
       "request": "launch",
       "module": "infra_lib.cli.cli",
-      "args": ["init", "--stack", ".net8", "--provider", "aws"],
+      "args": ["init", "--stack", "net8", "--provider", "aws"],
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}",
       "env": {

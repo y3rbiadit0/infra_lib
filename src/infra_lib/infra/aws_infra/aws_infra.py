@@ -12,7 +12,7 @@ from .queues_util import QueuesUtil
 from .s3_util import S3Util
 from .secrets_util import SecretsManagerUtil
 from .api_gateway_util import APIGatewayUtil
-from ...enums import Environment
+from ...enums import InfraEnvironment
 from ..base_infra import BaseInfraBuilder
 
 logger = logging.getLogger(__name__)
@@ -52,7 +52,7 @@ class AWSInfraBuilder(BaseInfraBuilder):
         self,
         infrastructure_dir: Path,
         projects_dir: Path,
-        environment: Environment,
+        environment: InfraEnvironment,
         env_vars: Dict[str, str],
         config_dir: str = "aws_config"
     ):

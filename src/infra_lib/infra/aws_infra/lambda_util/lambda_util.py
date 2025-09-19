@@ -9,7 +9,7 @@ from mypy_boto3_lambda.literals import RuntimeType
 
 
 from ..boto_client_factory import AwsService, BotoClientFactory
-from ....enums import Environment
+from ....enums import InfraEnvironment
 from ..creds import CredentialsProvider
 from .build_runner import RUNTIME_BUILDERS
 
@@ -19,13 +19,13 @@ logger = logging.getLogger(__name__)
 class LambdaUtil:
     _infrastructure_dir: Path
     creds: CredentialsProvider
-    environment: Environment
+    environment: InfraEnvironment
     _client_factory: BotoClientFactory
 
     def __init__(
         self,
         creds: CredentialsProvider,
-        environment: Environment,
+        environment: InfraEnvironment,
         infrastructure_dir: Path,
         client_factory: BotoClientFactory,
     ):
@@ -145,7 +145,7 @@ class AWSLambdaParameters:
     timeout_secs: int
     project_root: Path
     handler: str
-    environment: Environment
+    environment: InfraEnvironment
     runtime: RuntimeType
     env_vars: InitVar[Dict[str, str]]
     allowed_env_vars: List[str] = field(

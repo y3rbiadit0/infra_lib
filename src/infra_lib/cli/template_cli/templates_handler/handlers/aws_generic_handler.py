@@ -1,7 +1,7 @@
 from pathlib import Path
 from .base_template_handler import BaseTemplateHandler
 
-class AWSInfraTemplateHandler(BaseTemplateHandler):
+class AWSGenericTemplateHandler(BaseTemplateHandler):
     """
     Minimal AWS template handler using the generic infra_<env>.py template.
     Generates:

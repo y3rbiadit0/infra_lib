@@ -6,7 +6,7 @@ from typing import Dict, List, Optional
 import logging
 import importlib.util
 
-from ...enums import Environment
+from ...enums import InfraEnvironment
 from ...utils import run_command
 from ...infra.base_infra import BaseInfraBuilder
 
@@ -25,7 +25,7 @@ class EnvBuilder:
     def __init__(
         self,
         project_name: str,
-        environment: Optional[Environment] = None,
+        environment: Optional[InfraEnvironment] = None,
         compose_name: Optional[str] = "infra",
         project_root: Optional[Path] = None,
     ):
@@ -43,8 +43,8 @@ class EnvBuilder:
         self.project_root = project_root
 
         if environment is None:
-            env_value = os.environ.get("TARGET_ENV", Environment.local.value)
-            self.environment = Environment(env_value)
+            env_value = os.environ.get("TARGET_ENV", InfraEnvironment.local.value)
+            self.environment = InfraEnvironment(env_value)
         else:
             self.environment = environment
 

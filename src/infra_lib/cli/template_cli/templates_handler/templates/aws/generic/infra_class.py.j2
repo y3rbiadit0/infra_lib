@@ -1,0 +1,12 @@
+import os
+from infra_lib import Environment, AWSInfraBuilder, AWSQueueConfig, AWSLambdaParameters
+
+class {{ env.capitalize() }}Infra(AWSInfraBuilder):
+    def build(self):
+        """
+        Build the infrastructure for {{ env }} environment and {{ stack_type }} stack.
+        """
+        # Create secrets first
+        self.secrets_util.create_secrets()
+        
+        ## Add more infra

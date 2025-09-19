@@ -1,12 +1,13 @@
-# template_registry.py
 from pathlib import Path
-from .aws_net8_handler import AWSInfraTemplateHandler
+
+from .handlers import AWSGenericTemplateHandler, AWSNet8TemplateHandler
 
 TEMPLATE_ROOT = Path(__file__).parent / "templates"
 
 TEMPLATE_REGISTRY = {
     "aws": {
-        "net8": (AWSInfraTemplateHandler, TEMPLATE_ROOT / "aws" / "net8"),
+        "generic": (AWSGenericTemplateHandler, TEMPLATE_ROOT / "aws" / "generic"),
+        "net8": (AWSNet8TemplateHandler, TEMPLATE_ROOT / "aws" / "net8"),
     },
     # "azure": { ... }  # future
 }

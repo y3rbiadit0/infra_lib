@@ -5,7 +5,7 @@ import boto3
 import logging
 
 from .aws_services_enum import AwsService
-from ...enums import Environment
+from ...enums import InfraEnvironment
 from .creds import CredentialsProvider
 
 
@@ -19,11 +19,11 @@ class EventBridgeStackConfig:
 
 class EventBridgeUtil:
     creds: CredentialsProvider
-    environment: Environment
+    environment: InfraEnvironment
     _aws_localstack_dir: Path
 
     def __init__(
-        self, creds: CredentialsProvider, aws_localstack_dir: Path, environment: Environment
+        self, creds: CredentialsProvider, aws_localstack_dir: Path, environment: InfraEnvironment
     ):
         self.creds = creds
         self._aws_localstack_dir: Path = aws_localstack_dir

@@ -5,7 +5,7 @@ from mypy_boto3_apigateway import APIGatewayClient
 
 from .boto_client_factory import BotoClientFactory
 from .aws_services_enum import AwsService
-from ...enums import Environment
+from ...enums import InfraEnvironment
 from .creds import CredentialsProvider
 
 logger = logging.getLogger(__name__)
@@ -14,14 +14,14 @@ logger = logging.getLogger(__name__)
 class APIGatewayUtil:
     creds: CredentialsProvider
     _client_factory: BotoClientFactory
-    environment: Environment
+    environment: InfraEnvironment
     config_dir: Path
 
     def __init__(
         self,
         creds: CredentialsProvider,
         config_dir: Path,
-        environment: Environment,
+        environment: InfraEnvironment,
         client_factory: BotoClientFactory,
     ):
         self.creds = creds

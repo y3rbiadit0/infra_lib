@@ -3,7 +3,7 @@ from pathlib import Path
 import logging
 from typing import Dict
 
-from ..enums import Environment
+from ..enums import InfraEnvironment
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -22,13 +22,13 @@ class BaseInfraBuilder(ABC):
     """
 
     env_vars: Dict[str, str]
-    environment: Environment
+    environment: InfraEnvironment
 
     def __init__(
         self,
         infrastructure_dir: Path,
         projects_dir: Path,
-        environment: Environment,
+        environment: InfraEnvironment,
         env_vars: Dict[str, str],
     ):
         """Initializes the BaseInfraBuilder with project paths and environment.
