@@ -1,7 +1,7 @@
 import click
 from pathlib import Path
 
-from .infra_generator import InfraGenerator
+from .templates_handler import get_template_handler
 
 
 @click.command("init")
@@ -15,17 +15,12 @@ def template_cli(stack, provider):
     """Initialize a new infrastructure stack template."""
     click.echo(f"Initializing stack '{stack}' for provider '{provider}'...")
 
-    # TODO: Add template creation logic here
-    # For example:
-    # - Create folder structure
-    # - Add boilerplate files for Lambda, API Gateway, etc.
-    # - Generate default configuration files
-
     project_dir = Path(".")
-    project_dir.mkdir(exist_ok=True)
-
-    generator = InfraGenerator(project_dir, "", stack_type=stack)
-    generator.generate()
+    stack_type = "net8"
+    handler_cls, template_dir = get_template_handler(provider, stack_type)
+    handler = handler_cls(template_dir, project_dir, stack_type)
+    handler.generate()
+    
     click.echo("Stack initialization complete!")
 
 

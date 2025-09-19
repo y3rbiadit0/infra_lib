@@ -1,0 +1,1 @@
+from .template_registry import get_template_handler
