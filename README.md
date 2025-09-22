@@ -1,4 +1,4 @@
-# infra-lib
+# `infra-lib`
 
 `infra-lib` is a framework for managing Infrastructure as Code (IaC) templates with a unified CLI.
 
@@ -26,11 +26,15 @@ Extensible support for multiple cloud providers (currently AWS).
 
 ## Installation
 1. **Clone the repo**
+```powershell
 git clone https://github.com/your-org/infra-lib.git
 cd infra-lib
+```
 
 2. **Install dependencies (via uv)**
+```powershell
 uv sync
+```
 
 3. **Or install locally in editable mode**
 pip install -e .
@@ -56,5 +60,6 @@ Build and run a project for a specific environment:
 infra-cli run --project MyProject --environment local
 # This will run a docker-compose.yml with what is specified as infrastructure in local/infra_local.py
 ```
+
 
 
