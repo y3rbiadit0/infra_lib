@@ -1,5 +1,5 @@
 from dataclasses import InitVar, dataclass, field
-from typing import Dict, List
+from typing import Dict, List, Optional
 import boto3
 import logging
 from pathlib import Path
@@ -63,6 +63,8 @@ class LambdaUtil:
         self._add_lambda_permission_for_apigateway(
             function_name=lambda_params.function_name, statement_id="apigateway-access"
         )
+
+        self._log_lambda_paths_from_apigateway(lambda_name=lambda_params.function_name, api_id=lambda_params.api_id)
 
     def _build_and_zip_lambda(
         self, project_root: Path, output_dir: Path, runtime: RuntimeType
@@ -136,14 +138,14 @@ class LambdaUtil:
             logger.info(
                 f"Permission added for API Gateway on Lambda '{function_name}'."
             )
-            self._log_lambda_paths_from_apigateway(function_name)
+            
         except self._lambda_client.exceptions.ResourceConflictException:
             logger.info(
                 f"Permission '{statement_id}' already exists for Lambda '{function_name}'."
             )
 
 
-    def _log_lambda_paths_from_apigateway(self, lambda_name: str):
+    def _log_lambda_paths_from_apigateway(self, lambda_name: str, api_id: str):
         """
         Checks the API Gateway JSON for any paths integrated with the given Lambda,
         and logs the URL for each path.
@@ -154,8 +156,7 @@ class LambdaUtil:
         endpoint_url = self._lambda_client.meta.endpoint_url
         region = self._lambda_client.meta.region_name if "localhost" not in endpoint_url else None
 
-        import pdb
-        pdb.set_trace()
+
         paths = gateway_content.get("paths", {})
         for resource_path, methods in paths.items():
             for method_name, method_def in methods.items():
@@ -163,9 +164,9 @@ class LambdaUtil:
                 uri = integration.get("uri", "")
                 if lambda_name in uri:
                     if "localhost" in endpoint_url:
-                        url = f"{endpoint_url}/restapis/{lambda_name}/{self.environment}/_user_request_/{resource_path.lstrip('/')}"
+                        url = f"{endpoint_url}/restapis/{api_id}/{self.environment}/_user_request_/{resource_path.lstrip('/')}"
                     else:
-                        url = f"https://{lambda_name}.execute-api.{region}.amazonaws.com/{self.environment}/{resource_path}"
+                        url = f"https://{api_id}.execute-api.{region}.amazonaws.com/{self.environment}/{resource_path}"
 
                     logger.info(
                         f"Lambda '{lambda_name}' is integrated with API path '{resource_path}' "
@@ -182,6 +183,7 @@ class AWSLambdaParameters:
     timeout_secs: int
     project_root: Path
     handler: str
+    api_id: Optional[str]
     environment: InfraEnvironment
     runtime: RuntimeType
     env_vars: InitVar[Dict[str, str]]

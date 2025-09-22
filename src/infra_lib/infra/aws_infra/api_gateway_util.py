@@ -83,3 +83,5 @@ class APIGatewayUtil:
         with open(Path.joinpath(self.config_dir, self.gateway_file), "r") as f:
             return json.load(f)
 
+
+    

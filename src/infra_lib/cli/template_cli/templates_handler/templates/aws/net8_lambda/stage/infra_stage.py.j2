@@ -4,19 +4,21 @@ import os
 from infra_lib import InfraEnvironment, AWSInfraBuilder, AWSQueueConfig, AWSLambdaParameters
 
 class StageInfra(AWSInfraBuilder):
+    api_id: str = "gateway-example"
     def build(self):
         """
         Build the infrastructure for stage environment and net8 stack.
         """
         self.secrets_util.create_secrets()    
         self.create_lambdas()
-        self.api_gateway_util.create_api_gateway(api_id="gateway-example")
+        self.api_gateway_util.create_api_gateway(api_id=self.api_id)
 
     def create_lambdas(self):
         self.lambda_util.add_lambda(
             lambda_params=AWSLambdaParameters(
                 project_root=self.project_root,
                 function_name="test-lambda",
+                api_id=self.api_id,
                 runtime="dotnet8",
                 memory_size=256,
                 timeout_secs=900,
