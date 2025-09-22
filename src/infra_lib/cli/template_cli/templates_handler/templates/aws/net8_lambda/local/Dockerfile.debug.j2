@@ -1,0 +1,25 @@
+FROM mcr.microsoft.com/dotnet/sdk:{{ dotnet_version | default("8.0") }} AS build
+WORKDIR /build
+
+COPY . .
+
+RUN dotnet publish {{ project_name }}.csproj \
+    -c Debug \
+    -o out \
+    /p:DebugType=portable \
+    /p:DebugSymbols=true
+
+WORKDIR /build/out
+RUN ln -s {{ project_name }}.dll MainApp.dll
+
+
+FROM mcr.microsoft.com/dotnet/aspnet:{{ dotnet_version | default("8.0") }} AS debug
+WORKDIR /app
+
+COPY --from=build /build/out .
+
+RUN apt-get update && apt-get install -y unzip curl \
+    && mkdir -p /vsdbg \
+    && curl -sSL https://aka.ms/getvsdbgsh | bash /dev/stdin -v latest -l /vsdbg
+
+ENTRYPOINT ["dotnet", "MainApp.dll"]

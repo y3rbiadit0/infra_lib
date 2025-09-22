@@ -1,9 +1,11 @@
 from pathlib import Path
+from typing import List
+
 
 from .....enums import InfraEnvironment
 from .base_template_handler import BaseTemplateHandler
-from ..template_file.template_file import TemplateFile
 from .util import NETContextPrompter
+from ..template_file import VSCodeLaunchConfig, TemplateFile, dotnet_local_task
 
 
 class AWSNet8TemplateHandler(BaseTemplateHandler):
@@ -60,12 +62,17 @@ class AWSNet8TemplateHandler(BaseTemplateHandler):
                 ),
                 TemplateFile(
                     source=self.templates_dir / "aws_config" / "secrets.json",
-                    target=self.project_root / "infrastructure" / "aws_config" / "secrets.json",
+                    target=self.project_root
+                    / "infrastructure"
+                    / "aws_config"
+                    / "secrets.json",
                     context_provider={},
                 ),
-                
-
-
             ]
 
         return []
+
+    def vscode_configurations(self) -> List[VSCodeLaunchConfig]:
+        return [
+            dotnet_local_task(container_name=f"debug-{InfraEnvironment.local}")
+        ]

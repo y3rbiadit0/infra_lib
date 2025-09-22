@@ -6,7 +6,7 @@ import logging
 from jinja2 import Environment as JinjaEnvironment, FileSystemLoader
 
 from .....enums import InfraEnvironment
-from ..template_file.template_file import TemplateFile
+from ..template_file import TemplateFile, VSCodeGenerator, VSCodeLaunchConfig
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -42,20 +42,21 @@ class BaseTemplateHandler(ABC):
                 tf.generate(self.jinja_env)
                 logger.info(f"Generated {tf.target}")
 
+        VSCodeGenerator(self.project_root).add_tasks(self.vscode_configurations())
         logger.info("Infrastructure scaffolding complete!")
 
-    def _create_env_init(self, env: str):
+    def _create_env_init(self, infra_environment: str):
         """
         Create __init__.py inside environment folders (local, stage, prod)
         that imports its environment-specific infra class.
         """
-        env_dir = self.project_root / "infrastructure" / env
+        env_dir = self.project_root / "infrastructure" / infra_environment
         env_dir.mkdir(parents=True, exist_ok=True)
         init_file = env_dir / "__init__.py"
 
-        import_line = f"from .infra_{env} import {env.capitalize()}Infra\n"
+        import_line = f"from .infra_{infra_environment} import {infra_environment.capitalize()}Infra\n"
         init_file.write_text(import_line)
-        logger.info(f"Created {init_file} with import for {env}")
+        logger.info(f"Created {init_file} with import for {infra_environment}")
 
 
     def _create_infrastructure_init(self):
@@ -110,6 +111,10 @@ class BaseTemplateHandler(ABC):
 
     @abstractmethod
     def get_docker_context(self) -> Dict:
+        pass
+
+    @abstractmethod
+    def vscode_configurations(self) -> List[VSCodeLaunchConfig]:
         pass
 
     def get_extra_files(self, env: str) -> List[TemplateFile]:

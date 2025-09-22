@@ -12,6 +12,7 @@ dependencies = [
     "boto3-stubs[apigateway,cloudformation,ecr,iam,kinesis,lambda,s3,schemas,secretsmanager,signer,sqs,stepfunctions,sts,xray]>=1.39.7",
     "click>=8.1.8",
     "jinja2>=3.1.6",
+    "json5>=0.12.1",
     "python-dotenv>=1.1.1",
 ]
 
