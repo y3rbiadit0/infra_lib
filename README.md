@@ -25,14 +25,14 @@ Extensible support for multiple cloud providers (currently AWS).
 5. 🖥️ Local developer support with auto-generated configs (e.g., VSCode, Docker).
 
 ## Installation
-1. # Clone the repo
+1. **Clone the repo**
 git clone https://github.com/your-org/infra-lib.git
 cd infra-lib
 
-2. # Install dependencies (via uv)
+2. **Install dependencies (via uv)**
 uv sync
 
-3. # Or install locally in editable mode
+3. **Or install locally in editable mode**
 pip install -e .
 
 ## 🛠 Usage
@@ -56,3 +56,4 @@ Build and run a project for a specific environment:
 infra-cli run --project MyProject --environment local
 # This will run a docker-compose.yml with what is specified as infrastructure in local/infra_local.py
 ```
+
