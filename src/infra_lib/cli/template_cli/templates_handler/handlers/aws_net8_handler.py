@@ -71,7 +71,7 @@ class AWSNet8TemplateHandler(BaseTemplateHandler):
 
         return []
 
-    def vscode_configurations(self) -> List[VSCodeLaunchConfig]:
+    def vscode_launch_configurations(self) -> List[VSCodeLaunchConfig]:
         return [
             dotnet_debug_container_task(container_name=f"debug-{InfraEnvironment.local}"),
         ]
