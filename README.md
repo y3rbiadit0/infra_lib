@@ -12,7 +12,7 @@ It provides:
 
 Extensible support for multiple cloud providers (currently AWS).
 
-🚀 Features
+### 🚀 **Features**
 
 1. 📦 Template registry with reusable IaC boilerplates (Jinja2-based).
 
@@ -56,4 +56,5 @@ Build and run a project for a specific environment:
 infra-cli run --project MyProject --environment local
 # This will run a docker-compose.yml with what is specified as infrastructure in local/infra_local.py
 ```
+
 
