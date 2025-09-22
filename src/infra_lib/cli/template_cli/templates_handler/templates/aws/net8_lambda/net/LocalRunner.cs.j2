@@ -1,0 +1,23 @@
+namespace {{ project_name }}
+{
+    class LocalRunner
+    {
+        static async Task Main()
+        {
+
+            if (EnvironmentSettings.Instance.IsDebugging)
+            {
+                await LocalLambdaProxy.RunLocalProxy(async (request) =>
+                {
+                    var lambda = new LambdaApp();
+                    return await lambda.HandlerAsync(request);
+                },
+                routePrefix: "test",
+                port: 5000);
+                return;
+            }
+
+        }
+
+    }
+}

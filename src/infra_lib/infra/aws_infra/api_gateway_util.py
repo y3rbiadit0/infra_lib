@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
-
+from typing import Dict
+import json
 from mypy_boto3_apigateway import APIGatewayClient
 
 from .boto_client_factory import BotoClientFactory
@@ -28,21 +29,20 @@ class APIGatewayUtil:
         self.config_dir: Path = config_dir
         self.environment = environment
         self._client_factory = client_factory
+        self.gateway_file = "apigateway.json"
 
     @property
     def apigateway_client(self) -> APIGatewayClient:
         return self._client_factory.client(AwsService.APIGateway)
 
-    def create_api_gateway(
-        self, api_id: str, gateway_config_file: str = "apigateway.json"
-    ):
+    def create_api_gateway(self, api_id: str):
         api_id = self._create_api_with_custom_id(
             name=f"{api_id}",
             custom_id=f"{api_id}",
         )
         self._import_api_definition(
             api_id=api_id,
-            json_file=Path.joinpath(self.config_dir, gateway_config_file),
+            json_file=Path.joinpath(self.config_dir, self.gateway_file),
         )
         self._deploy_api_gateway(api_id, stage_name=self.environment)
 
@@ -65,4 +65,21 @@ class APIGatewayUtil:
 
     def _deploy_api_gateway(self, api_id: str, stage_name: str):
         self.apigateway_client.create_deployment(restApiId=api_id, stageName=stage_name)
+        
+        endpoint_url = self.apigateway_client.meta.endpoint_url
+        if "localhost" in endpoint_url:
+            # LocalStack URL
+            api_url = f"{endpoint_url}/restapis/{api_id}/{stage_name}/_user_request_"
+        else:
+            # Real AWS URL
+            region = self.apigateway_client.meta.region_name
+            api_url = f"https://{api_id}.execute-api.{region}.amazonaws.com/{stage_name}/"
+
         logger.info(f"API Gateway '{api_id}' deployed to stage '{stage_name}'.")
+        logger.info(f"📡 API available at: {api_url}")
+
+
+    def gateway_config_file(self) -> Dict:
+        with open(Path.joinpath(self.config_dir, self.gateway_file), "r") as f:
+            return json.load(f)
+

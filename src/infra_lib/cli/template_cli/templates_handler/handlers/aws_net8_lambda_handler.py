@@ -4,7 +4,11 @@ from typing import List
 from .....enums import InfraEnvironment
 from .base_template_handler import BaseTemplateHandler
 from .util import NETContextPrompter
-from ..template_file import VSCodeLaunchConfig, TemplateFile, dotnet_debug_container_task
+from ..template_file import (
+    VSCodeLaunchConfig,
+    TemplateFile,
+    dotnet_debug_container_task,
+)
 
 
 class AWSNet8LambdaTemplateHandler(BaseTemplateHandler):
@@ -60,18 +64,70 @@ class AWSNet8LambdaTemplateHandler(BaseTemplateHandler):
                     },
                 ),
                 TemplateFile(
+                    source=self.templates_dir / "net" / "LambdaApp.cs.j2",
+                    target=self.project_root / "LambdaApp.cs",
+                    context_provider=lambda: {
+                        "project_name": templates_env["project_name"]
+                    },
+                ),
+                TemplateFile(
+                    source=self.templates_dir / "net" / "LocalLambdaProxy.cs.j2",
+                    target=self.project_root / "LocalLambdaProxy.cs",
+                    context_provider=lambda: {
+                        "project_name": templates_env["project_name"]
+                    },
+                ),
+                TemplateFile(
+                    source=self.templates_dir / "net" / "LocalRunner.cs.j2",
+                    target=self.project_root / "LocalRunner.cs",
+                    context_provider=lambda: {
+                        "project_name": templates_env["project_name"]
+                    },
+                ),
+                TemplateFile(
+                    source=self.templates_dir / "net" / "SecretsManagerUtil.cs.j2",
+                    target=self.project_root / "SecretsManagerUtil.cs",
+                    context_provider=lambda: {
+                        "project_name": templates_env["project_name"]
+                    },
+                ),
+                TemplateFile(
                     source=self.templates_dir / "aws_config" / "secrets.json",
                     target=self.project_root
                     / "infrastructure"
                     / "aws_config"
                     / "secrets.json",
-                    context_provider={},
+                ),
+                TemplateFile(
+                    source=self.templates_dir / "aws_config" / "apigateway.json.j2",
+                    target=self.project_root
+                    / "infrastructure"
+                    / "aws_config"
+                    / "apigateway.json",
+                    context_provider=lambda: self.get_env_context(
+                        InfraEnvironment.stage
+                    ),
+                ),
+                TemplateFile(
+                    source=self.templates_dir
+                    / InfraEnvironment.stage
+                    / "infra_stage.py.j2",
+                    target=self.project_root
+                    / "infrastructure"
+                    / InfraEnvironment.stage
+                    / "infra_stage.py",
+                    context_provider=lambda: self.get_env_context(
+                        InfraEnvironment.stage
+                    )
+                    | templates_env,
                 ),
             ]
 
         return []
 
-    def vscode_launch_configurations(self) -> List[VSCodeLaunchConfig]:
+    def vscode_configurations(self) -> List[VSCodeLaunchConfig]:
         return [
-            dotnet_debug_container_task(container_name=f"debug-{InfraEnvironment.local}"),
+            dotnet_debug_container_task(
+                container_name=f"debug-{InfraEnvironment.local}"
+            ),
         ]

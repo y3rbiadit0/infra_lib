@@ -16,9 +16,9 @@ def template_cli(stack, provider):
     click.echo(f"Initializing stack '{stack}' for provider '{provider}'...")
 
     project_dir = Path(".")
-    stack_type = "net8"
-    handler_cls, template_dir = get_template_handler(provider, stack_type)
-    handler = handler_cls(template_dir, project_dir, stack_type)
+    
+    handler_cls, template_dir = get_template_handler(provider, stack)
+    handler = handler_cls(template_dir, project_dir, stack)
     handler.generate()
     
     click.echo("Stack initialization complete!")

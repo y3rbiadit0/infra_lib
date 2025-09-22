@@ -4,6 +4,7 @@ import boto3
 import logging
 from pathlib import Path
 import zipfile
+from ..api_gateway_util import APIGatewayUtil
 from mypy_boto3_lambda import LambdaClient
 from mypy_boto3_lambda.literals import RuntimeType
 
@@ -21,6 +22,7 @@ class LambdaUtil:
     creds: CredentialsProvider
     environment: InfraEnvironment
     _client_factory: BotoClientFactory
+    config_dir: Path
 
     def __init__(
         self,
@@ -28,11 +30,13 @@ class LambdaUtil:
         environment: InfraEnvironment,
         infrastructure_dir: Path,
         client_factory: BotoClientFactory,
+        config_dir: Path
     ):
         self.creds = creds
         self.environment = environment
         self._infrastructure_dir = infrastructure_dir
         self._client_factory = client_factory
+        self.config_dir = config_dir
 
     @property
     def _lambda_client(self) -> LambdaClient:
@@ -132,10 +136,43 @@ class LambdaUtil:
             logger.info(
                 f"Permission added for API Gateway on Lambda '{function_name}'."
             )
+            self._log_lambda_paths_from_apigateway(function_name)
         except self._lambda_client.exceptions.ResourceConflictException:
             logger.info(
                 f"Permission '{statement_id}' already exists for Lambda '{function_name}'."
             )
+
+
+    def _log_lambda_paths_from_apigateway(self, lambda_name: str):
+        """
+        Checks the API Gateway JSON for any paths integrated with the given Lambda,
+        and logs the URL for each path.
+        """
+        gateway_util = APIGatewayUtil(creds=self.creds, config_dir=self.config_dir, environment=self.environment, client_factory=self._client_factory)
+        gateway_content = gateway_util.gateway_config_file()
+
+        endpoint_url = self._lambda_client.meta.endpoint_url
+        region = self._lambda_client.meta.region_name if "localhost" not in endpoint_url else None
+
+        import pdb
+        pdb.set_trace()
+        paths = gateway_content.get("paths", {})
+        for resource_path, methods in paths.items():
+            for method_name, method_def in methods.items():
+                integration = method_def.get("x-amazon-apigateway-integration", {})
+                uri = integration.get("uri", "")
+                if lambda_name in uri:
+                    if "localhost" in endpoint_url:
+                        url = f"{endpoint_url}/restapis/{lambda_name}/{self.environment}/_user_request_/{resource_path.lstrip('/')}"
+                    else:
+                        url = f"https://{lambda_name}.execute-api.{region}.amazonaws.com/{self.environment}/{resource_path}"
+
+                    logger.info(
+                        f"Lambda '{lambda_name}' is integrated with API path '{resource_path}' "
+                        f"({method_name.upper()}) -> URL: {url}"
+                    )
+                    return
+        logger.info(f"Lambda '{lambda_name}' is not integrated with API --> Check apigateway.json file")
 
 
 @dataclass

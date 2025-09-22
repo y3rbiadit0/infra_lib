@@ -1,0 +1,72 @@
+using Amazon.Lambda.APIGatewayEvents;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+
+namespace {{ project_name }}
+{
+    /// <summary>
+    /// Runs a local HTTP server to proxy API Gateway requests to Lambda handlers for local testing.
+    /// </summary>
+    public static class LocalLambdaProxy
+    {
+        /// <summary>
+        /// Starts a local HTTP server that routes POST requests to a Lambda handler.
+        /// Starts a debugger server for VSCode in port 5005 (default)
+        /// </summary>
+        /// <param name="lambdaHandler">The Lambda handler to invoke.</param>
+        /// <param name="route">The route prefix for this Lambda (e.g., "query").</param>
+        /// <param name="port">The port to run the local HTTP server.</param>
+        public static async Task RunLocalProxy(
+            Func<APIGatewayProxyRequest, Task<APIGatewayProxyResponse>> lambdaHandler,
+            string routePrefix = "test",
+            int port = 5000)
+        {
+            await WaitForDebugger();
+
+            Run(lambdaHandler, routePrefix, port);
+        }
+
+        private static void Run(
+            Func<APIGatewayProxyRequest, Task<APIGatewayProxyResponse>> lambdaHandler,
+            string route = "test",
+            int port = 5000)
+        {
+            var builder = WebApplication.CreateBuilder();
+            var app = builder.Build();
+
+            MapLambdaToRoute(app, route, lambdaHandler);
+
+            Console.WriteLine($"Local Lambda proxy running on http://0.0.0.0:{port}/{route}");
+            app.Run($"http://0.0.0.0:{port}");
+        }
+
+        private static void MapLambdaToRoute(WebApplication app, string routePrefix, Func<APIGatewayProxyRequest, Task<APIGatewayProxyResponse>> lambdaHandler)
+        {
+            app.MapGet($"/{routePrefix}", async (HttpRequest request) =>
+            {
+                
+                var apiEvent = new APIGatewayProxyRequest
+                {
+                    Path = request.Path,
+                    HttpMethod = "GET"
+                };
+
+                var response = await lambdaHandler(apiEvent);
+
+                return Results.Content(response.Body ?? string.Empty, "application/json");
+            });
+        }
+
+        private static async Task WaitForDebugger()
+        {
+            Console.WriteLine("Waiting for debugger to attach...");
+            while (!System.Diagnostics.Debugger.IsAttached)
+            {
+                await Task.Delay(500);
+            }
+
+            Console.WriteLine("Debugger attached.");
+            Console.WriteLine("Starting local proxy server for Postman...");
+        }
+    }
+}

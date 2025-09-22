@@ -79,13 +79,14 @@ class AWSInfraBuilder(BaseInfraBuilder):
             creds=self.creds,
             environment=self.environment,
             client_factory=self._client_factory,
-            config_dir=self.config_dir,
+            config_dir=self.config_dir
         )
         self.lambda_util = LambdaUtil(
             creds=self.creds,
             environment=self.environment,
             infrastructure_dir=self.infrastructure_dir,
             client_factory=self._client_factory,
+            config_dir=self.config_dir
         )
         self.eventbridge_util = EventBridgeUtil(
             creds=self.creds,

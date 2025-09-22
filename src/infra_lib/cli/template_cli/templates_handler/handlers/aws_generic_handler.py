@@ -36,6 +36,9 @@ class AWSGenericTemplateHandler(BaseTemplateHandler):
             "services": ["s3", "sqs", "events", "secretsmanager", "cloudformation", "apigateway", "lambda"],
             "localstack_volume_dir": "./volume",
         }
+    
+    def vscode_configurations(self):
+        return []
 
 
 
