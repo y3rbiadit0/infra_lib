@@ -1,24 +1,29 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 import json
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Optional
 import json5
+
 
 @dataclass
 class VSCodeLaunchConfig:
     """Represents a VS Code debug configuration."""
-    name: str
-    type: str
-    request: str
-    processId: int
-    pipeTransport: Dict
-    sourceFileMap: Dict
-    justMyCode: bool
-    symbolOptions: Dict
+    name: Optional[str] = None
+    type: Optional[str] = None
+    request: Optional[str] = None
+    processId: Optional[int] = None
+    pipeTransport: Optional[Dict] = None
+    sourceFileMap: Optional[Dict] = None
+    justMyCode: Optional[bool] = None
+    symbolOptions: Optional[Dict] = None
+    args: Optional[List[str]] = None
+    cwd: Optional[str] = None
+    console: Optional[str] = None
+    program: Optional[str] = None
 
     def to_dict(self) -> Dict:
-        """Convert the dataclass to dictionary for JSON serialization."""
-        return self.__dict__
+        """Return a dict without None values, ready for JSON serialization."""
+        return {k: v for k, v in asdict(self).items() if v is not None}
 
 
 class VSCodeGenerator:
@@ -49,7 +54,7 @@ class VSCodeGenerator:
 
 
 
-def dotnet_local_task(container_name: str = "debug-local") -> VSCodeLaunchConfig:
+def dotnet_debug_container_task(container_name: str = "debug-local") -> VSCodeLaunchConfig:
     return VSCodeLaunchConfig(
         name=".NET-Local",
         type="coreclr",
