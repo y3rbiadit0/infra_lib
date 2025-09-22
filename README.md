@@ -61,6 +61,9 @@ infra-cli run --project MyProject --environment local
 # This will run a docker-compose.yml with what is specified as infrastructure in local/infra_local.py
 ```
 
+### 2. Example Project
+
+[.NET8-Lambda Project Example](https://github.com/y3rbiadit0/IaC_example/blob/master/README.md)
 
 
 ## How it works?
@@ -97,5 +100,6 @@ infrastructure/
 - `Environment folders (local/, stage/, prod/)` → Contain `.env` variables and `infra_*.py` files that describe the infrastructure for that environment.
 
 - `aws_config/` → Stores reusable AWS JSON configuration (e.g., API Gateway routes, Secrets Manager).
+
 
 
