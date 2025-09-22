@@ -4,7 +4,7 @@ from .aws_net8_lambda_handler import AWSNet8LambdaTemplateHandler
 
 
 __all__ = [
-    "AWSGenericTemplateHandler",
-    "AWSNet8TemplateHandler",
-    "AWSNet8LambdaTemplateHandler",
+	"AWSGenericTemplateHandler",
+	"AWSNet8TemplateHandler",
+	"AWSNet8LambdaTemplateHandler",
 ]

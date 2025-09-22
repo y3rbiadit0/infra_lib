@@ -4,7 +4,7 @@ from .lambda_util import AWSLambdaParameters
 
 
 __all__ = [
-    "AWSInfraBuilder",
-    "AWSQueueConfig",
-    "AWSLambdaParameters",
+	"AWSInfraBuilder",
+	"AWSQueueConfig",
+	"AWSLambdaParameters",
 ]
