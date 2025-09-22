@@ -27,7 +27,7 @@ Extensible support for multiple cloud providers (currently AWS).
 ## Installation
 1. **Clone the repo**
 ```powershell
-git clone https://github.com/your-org/infra-lib.git
+git clone https://github.com/y3rbiadit0/infra-lib.git
 cd infra-lib
 ```
 
@@ -97,4 +97,5 @@ infrastructure/
 - `Environment folders (local/, stage/, prod/)` → Contain `.env` variables and `infra_*.py` files that describe the infrastructure for that environment.
 
 - `aws_config/` → Stores reusable AWS JSON configuration (e.g., API Gateway routes, Secrets Manager).
+
 
