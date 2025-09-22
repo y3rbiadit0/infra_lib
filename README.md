@@ -63,3 +63,38 @@ infra-cli run --project MyProject --environment local
 
 
 
+## How it works?
+
+The idea behind this tool is to have a project initializer that has `infra-lib` support with a set of files.
+Whenever we do an `init` we create something like:
+```powershell
+infrastructure/
+├── aws_config/          # Shared AWS (Localstack) configuration (API Gateway, Secrets, etc.)
+│   ├── apigateway.json
+│   └── secrets.json
+│
+├── local/               # Local development environment
+│   ├── .env
+│   ├── Dockerfile.debug
+│   └── infra_local.py   # Describe Infrastructure as Code for `Local` Environment
+│
+├── stage/               # Staging environment
+│   ├── .env
+│   └── infra_stage.py   # Describe Infrastructure as Code for `Stage` Environment
+│
+├── prod/                # Production environment
+│   ├── .env
+│   └── infra_prod.py    # Describe Infrastructure as Code for `Prod` Environment   
+│
+├── volume/              # Reserved for persistent storage, logs, or mounted volumes
+│
+├── docker-compose.yml   # Top-level Docker services definition
+└── __init__.py
+```
+
+- `docker-compose.yml` → Defines containerized services used across environments.
+
+- `Environment folders (local/, stage/, prod/)` → Contain `.env` variables and `infra_*.py` files that describe the infrastructure for that environment.
+
+- `aws_config/` → Stores reusable AWS JSON configuration (e.g., API Gateway routes, Secrets Manager).
+
