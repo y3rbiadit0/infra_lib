@@ -21,7 +21,7 @@ services:
       dockerfile: infrastructure/local/Dockerfile.debug
       args:
         PROJECT_NAME: {{ project_name }}
-    container_name: lambda-debug-{{ project_name }}
+    container_name: lambda-debug-${TARGET_ENV}
     ports:
       - "5005:5005"  # Debugger attach port for VSCode
       - "5000:5000"  # Local Proxy to trigger lambda functions

@@ -16,7 +16,7 @@ class AWSNet8TemplateHandler(BaseTemplateHandler):
             "aws_secret_access_key": "test",
             "aws_default_region": "us-east-1",
             "aws_endpoint_url": "http://localhost:4566",
-            "localstack_secrets_manager_url": "http://localstack:4566"
+            "localstack_secrets_manager_url": "http://localstack:4566",
         }
 
     def get_docker_context(self) -> dict:
@@ -35,6 +35,10 @@ class AWSNet8TemplateHandler(BaseTemplateHandler):
 
     def get_extra_files(self, infra_environment: InfraEnvironment):
         if infra_environment == InfraEnvironment.local:
+            templates_env = NETContextPrompter(
+                root_dir=self.project_root, defaults={"dotnet_version": "8.0"}
+            ).build_context()
+
             return [
                 TemplateFile(
                     source=self.templates_dir
@@ -44,9 +48,16 @@ class AWSNet8TemplateHandler(BaseTemplateHandler):
                     / "infrastructure"
                     / InfraEnvironment.local
                     / "Dockerfile.debug",
-                    context_provider=lambda: NETContextPrompter(
-                        root_dir=self.project_root, defaults={"dotnet_version": "8.0"}
-                    ).build_context() | self.get_env_context(env=infra_environment),
-                )
+                    context_provider=lambda: templates_env
+                    | self.get_env_context(env=infra_environment),
+                ),
+                TemplateFile(
+                    source=self.templates_dir / "net" / "Environment.cs.j2",
+                    target=self.project_root / "Environment.cs",
+                    context_provider=lambda: {
+                        "project_name": templates_env["project_name"]
+                    },
+                ),
             ]
+
         return []
