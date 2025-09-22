@@ -4,6 +4,7 @@ from jinja2 import Environment as JinjaEnvironment
 
 from .header import DefaultHeaderGenerator, HeaderGenerator
 
+
 class TemplateFile:
     def __init__(
         self,
@@ -34,6 +35,5 @@ class TemplateFile:
 
         if self.header_generator:
             content = self.header_generator.generate_header(self.target) + content
-
 
         self.target.write_text(content)

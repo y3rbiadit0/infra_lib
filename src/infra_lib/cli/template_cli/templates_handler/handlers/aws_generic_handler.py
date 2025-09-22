@@ -3,6 +3,7 @@ from pathlib import Path
 from .....enums import InfraEnvironment
 from .base_template_handler import BaseTemplateHandler
 
+
 class AWSGenericTemplateHandler(BaseTemplateHandler):
     """
     Minimal AWS template handler using the generic infra_<env>.py template.
@@ -33,12 +34,17 @@ class AWSGenericTemplateHandler(BaseTemplateHandler):
 
     def get_docker_context(self) -> dict:
         return {
-            "services": ["s3", "sqs", "events", "secretsmanager", "cloudformation", "apigateway", "lambda"],
+            "services": [
+                "s3",
+                "sqs",
+                "events",
+                "secretsmanager",
+                "cloudformation",
+                "apigateway",
+                "lambda",
+            ],
             "localstack_volume_dir": "./volume",
         }
-    
+
     def vscode_configurations(self):
         return []
-
-
-

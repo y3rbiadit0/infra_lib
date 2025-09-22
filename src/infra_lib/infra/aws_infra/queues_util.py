@@ -13,7 +13,6 @@ from .creds import CredentialsProvider
 logger = logging.getLogger(__name__)
 
 
-
 @dataclass
 class AWSQueueConfig:
     name: str
@@ -22,6 +21,7 @@ class AWSQueueConfig:
     batch_size: int = 10
     batch_window: Optional[int] = None
     report_batch_item_failures: bool = False
+
 
 class QueuesUtil:
     creds: CredentialsProvider
@@ -34,13 +34,12 @@ class QueuesUtil:
     @property
     def _sqs_client(self) -> SQSClient:
         return self._client_factory.resource(AwsService.SQS)
-    
+
     @property
     def _lambda_client(self) -> LambdaClient:
         return self._client_factory.resource(AwsService.LAMBDA)
 
     def create_queues(self, queues: List[AWSQueueConfig]):
-
         for q in queues:
             self._sqs_client.create_queue(
                 QueueName=q.name,
@@ -52,14 +51,13 @@ class QueuesUtil:
             )
             logger.info(f"Queue created: {q.name} (Visibility {q.visibility_timeout}s)")
 
-
             self._lambda_client.create_event_source_mapping(
                 EventSourceArn=f"arn:aws:sqs:{self.creds.region}:000000000000:{q.name}",
                 FunctionName=q.lambda_target,
                 BatchSize=q.batch_size,
                 MaximumBatchingWindowInSeconds=q.batch_window or 0,
-                FunctionResponseTypes=["ReportBatchItemFailures"]
-                if q.report_batch_item_failures
-                else [],
+                FunctionResponseTypes=(
+                    ["ReportBatchItemFailures"] if q.report_batch_item_failures else []
+                ),
             )
             logger.info(f"Queue {q.name} linked to Lambda {q.lambda_target}")

@@ -1,4 +1,3 @@
-from abc import ABC, abstractmethod
 from pathlib import Path
 import logging
 from typing import Dict
@@ -54,7 +53,7 @@ class AWSInfraBuilder(BaseInfraBuilder):
         project_root: Path,
         environment: InfraEnvironment,
         env_vars: Dict[str, str],
-        config_dir: str = "aws_config"
+        config_dir: str = "aws_config",
     ):
         self.infrastructure_dir = infrastructure_dir
         self.project_root = project_root
@@ -79,14 +78,14 @@ class AWSInfraBuilder(BaseInfraBuilder):
             creds=self.creds,
             environment=self.environment,
             client_factory=self._client_factory,
-            config_dir=self.config_dir
+            config_dir=self.config_dir,
         )
         self.lambda_util = LambdaUtil(
             creds=self.creds,
             environment=self.environment,
             infrastructure_dir=self.infrastructure_dir,
             client_factory=self._client_factory,
-            config_dir=self.config_dir
+            config_dir=self.config_dir,
         )
         self.eventbridge_util = EventBridgeUtil(
             creds=self.creds,

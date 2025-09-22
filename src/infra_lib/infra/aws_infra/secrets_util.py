@@ -18,7 +18,12 @@ class SecretsManagerUtil:
     _client_factory: BotoClientFactory
     config_dir: Path
 
-    def __init__(self, creds: CredentialsProvider, client_factory: BotoClientFactory, config_dir: Path):
+    def __init__(
+        self,
+        creds: CredentialsProvider,
+        client_factory: BotoClientFactory,
+        config_dir: Path,
+    ):
         self.creds = creds
         self._client_factory = client_factory
         self.config_dir = config_dir
@@ -40,7 +45,9 @@ class SecretsManagerUtil:
 
         for name, value in secrets.items():
             try:
-                value = self.secrets_client.create_secret(Name=name, SecretString=json.dumps(value))
+                value = self.secrets_client.create_secret(
+                    Name=name, SecretString=json.dumps(value)
+                )
                 logger.info(f"Secret '{name}' created.")
             except self.secrets_client.exceptions.ResourceExistsException:
                 logger.info(f"Secret '{name}' already exists.")

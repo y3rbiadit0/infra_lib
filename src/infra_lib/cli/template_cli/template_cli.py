@@ -16,11 +16,11 @@ def template_cli(stack, provider):
     click.echo(f"Initializing stack '{stack}' for provider '{provider}'...")
 
     project_dir = Path(".")
-    
+
     handler_cls, template_dir = get_template_handler(provider, stack)
     handler = handler_cls(template_dir, project_dir, stack)
     handler.generate()
-    
+
     click.echo("Stack initialization complete!")
 
 

@@ -1,6 +1,5 @@
 from dataclasses import InitVar, dataclass, field
 from typing import Dict, List, Optional
-import boto3
 import logging
 from pathlib import Path
 import zipfile
@@ -30,7 +29,7 @@ class LambdaUtil:
         environment: InfraEnvironment,
         infrastructure_dir: Path,
         client_factory: BotoClientFactory,
-        config_dir: Path
+        config_dir: Path,
     ):
         self.creds = creds
         self.environment = environment
@@ -47,7 +46,6 @@ class LambdaUtil:
         return Path.joinpath(self._infrastructure_dir, "out")
 
     def add_lambda(self, lambda_params: "AWSLambdaParameters"):
-
         zip_path = self._build_and_zip_lambda(
             project_root=lambda_params.project_root,
             output_dir=self.output_dir,
@@ -64,7 +62,9 @@ class LambdaUtil:
             function_name=lambda_params.function_name, statement_id="apigateway-access"
         )
 
-        self._log_lambda_paths_from_apigateway(lambda_name=lambda_params.function_name, api_id=lambda_params.api_id)
+        self._log_lambda_paths_from_apigateway(
+            lambda_name=lambda_params.function_name, api_id=lambda_params.api_id
+        )
 
     def _build_and_zip_lambda(
         self, project_root: Path, output_dir: Path, runtime: RuntimeType
@@ -102,7 +102,6 @@ class LambdaUtil:
     def _create_lambda(
         self, zip_path: str, role: str, lambda_params: "AWSLambdaParameters"
     ):
-
         with open(zip_path, "rb") as f:
             zip_bytes = f.read()
 
@@ -126,7 +125,6 @@ class LambdaUtil:
     def _add_lambda_permission_for_apigateway(
         self, function_name: str, statement_id: str
     ):
-
         try:
             self._lambda_client.add_permission(
                 FunctionName=function_name,
@@ -138,24 +136,31 @@ class LambdaUtil:
             logger.info(
                 f"Permission added for API Gateway on Lambda '{function_name}'."
             )
-            
+
         except self._lambda_client.exceptions.ResourceConflictException:
             logger.info(
                 f"Permission '{statement_id}' already exists for Lambda '{function_name}'."
             )
-
 
     def _log_lambda_paths_from_apigateway(self, lambda_name: str, api_id: str):
         """
         Checks the API Gateway JSON for any paths integrated with the given Lambda,
         and logs the URL for each path.
         """
-        gateway_util = APIGatewayUtil(creds=self.creds, config_dir=self.config_dir, environment=self.environment, client_factory=self._client_factory)
+        gateway_util = APIGatewayUtil(
+            creds=self.creds,
+            config_dir=self.config_dir,
+            environment=self.environment,
+            client_factory=self._client_factory,
+        )
         gateway_content = gateway_util.gateway_config_file()
 
         endpoint_url = self._lambda_client.meta.endpoint_url
-        region = self._lambda_client.meta.region_name if "localhost" not in endpoint_url else None
-
+        region = (
+            self._lambda_client.meta.region_name
+            if "localhost" not in endpoint_url
+            else None
+        )
 
         paths = gateway_content.get("paths", {})
         for resource_path, methods in paths.items():
@@ -173,7 +178,9 @@ class LambdaUtil:
                         f"({method_name.upper()}) -> URL: {url}"
                     )
                     return
-        logger.info(f"Lambda '{lambda_name}' is not integrated with API --> Check apigateway.json file")
+        logger.info(
+            f"Lambda '{lambda_name}' is not integrated with API --> Check apigateway.json file"
+        )
 
 
 @dataclass

@@ -2,6 +2,7 @@ from pathlib import Path
 import click
 from abc import ABC, abstractmethod
 
+
 class BaseContextPrompter(ABC):
     def __init__(self, defaults: dict = None):
         """
@@ -34,12 +35,15 @@ class GenericContextPrompter(BaseContextPrompter):
         variables = meta.find_undeclared_variables(parsed_content)
 
         context = {
-            var: self.defaults[var] if var in self.defaults else click.prompt(f"Enter value for '{var}'")
+            var: (
+                self.defaults[var]
+                if var in self.defaults
+                else click.prompt(f"Enter value for '{var}'")
+            )
             for var in variables
         }
 
         return context
-
 
 
 class NETContextPrompter(BaseContextPrompter):
@@ -62,8 +66,7 @@ class NETContextPrompter(BaseContextPrompter):
             click.echo(f"{i}) {file.name}")
 
         choice = click.prompt(
-            "Enter the number of the project",
-            type=click.IntRange(1, len(csproj_files))
+            "Enter the number of the project", type=click.IntRange(1, len(csproj_files))
         )
 
         return csproj_files[choice - 1].stem
@@ -71,5 +74,5 @@ class NETContextPrompter(BaseContextPrompter):
     def build_context(self) -> dict:
         """Builds a context dictionary including the selected .csproj file."""
         context = dict(self.defaults)
-        context['project_name'] = self.select_csproj()
+        context["project_name"] = self.select_csproj()
         return context

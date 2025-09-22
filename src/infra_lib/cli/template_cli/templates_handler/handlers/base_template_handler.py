@@ -15,7 +15,13 @@ logging.basicConfig(level=logging.INFO)
 class BaseTemplateHandler(ABC):
     environments = [e.value for e in InfraEnvironment]
 
-    def __init__(self, templates_dir: Path, project_root: Path, stack_type: str, provider: str = ""):
+    def __init__(
+        self,
+        templates_dir: Path,
+        project_root: Path,
+        stack_type: str,
+        provider: str = "",
+    ):
         self.templates_dir = templates_dir
         self.project_root = project_root
         self.stack_type = stack_type
@@ -32,9 +38,9 @@ class BaseTemplateHandler(ABC):
 
         for env in self.environments:
             logger.info(f"Generating for {env}...")
-            
+
             self._create_env_init(env)
-            
+
             files = self._get_core_files(env) + self.get_extra_files(env)
 
             for tf in files:
@@ -58,7 +64,6 @@ class BaseTemplateHandler(ABC):
         init_file.write_text(import_line)
         logger.info(f"Created {init_file} with import for {infra_environment}")
 
-
     def _create_infrastructure_init(self):
         """
         Create infrastructure/__init__.py that imports all environment classes.
@@ -70,14 +75,11 @@ class BaseTemplateHandler(ABC):
         infra_dir = self.project_root / "infrastructure"
         infra_dir.mkdir(exist_ok=True)
         lines = [
-            f"from .{env} import {env.capitalize()}Infra\n"
-            for env in self.environments
+            f"from .{env} import {env.capitalize()}Infra\n" for env in self.environments
         ]
         init_file = infra_dir / "__init__.py"
         init_file.write_text("".join(lines))
         logger.info(f"Created {init_file} importing all environments")
-
-
 
     def _get_core_files(self, env: str) -> List[TemplateFile]:
         """Core files that every handler must generate"""

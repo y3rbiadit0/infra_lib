@@ -8,6 +8,7 @@ import json5
 @dataclass
 class VSCodeLaunchConfig:
     """Represents a VS Code debug configuration."""
+
     name: Optional[str] = None
     type: Optional[str] = None
     request: Optional[str] = None
@@ -28,6 +29,7 @@ class VSCodeLaunchConfig:
 
 class VSCodeGenerator:
     """Generates or updates .vscode/launch.json with one or more VS Code tasks."""
+
     def __init__(self, project_root: Path):
         self.project_root = project_root
         self.vscode_dir = self.project_root / ".vscode"
@@ -53,8 +55,9 @@ class VSCodeGenerator:
             f.write("\n")
 
 
-
-def dotnet_debug_container_task(container_name: str = "debug-local") -> VSCodeLaunchConfig:
+def dotnet_debug_container_task(
+    container_name: str = "debug-local",
+) -> VSCodeLaunchConfig:
     return VSCodeLaunchConfig(
         name=".NET-Local",
         type="coreclr",

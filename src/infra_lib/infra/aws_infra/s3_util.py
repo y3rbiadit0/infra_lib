@@ -22,11 +22,10 @@ class S3Util:
         return self._client_factory.resource(AwsService.S3)
 
     def create_bucket(self, bucket_name: str):
-
         bucket = self._s3_resource.Bucket(bucket_name)
         exists = True
         try:
-            self._s3_resource.meta.client.head_bucket(Bucket=bucket_name)
+            self._s3_resource.meta.client.head_bucket(Bucket=bucket.name)
         except:
             exists = False
 
