@@ -2,12 +2,15 @@ from pathlib import Path
 from typing import Callable, Dict, Optional
 from jinja2 import Environment as JinjaEnvironment
 
+from .header import DefaultHeaderGenerator, HeaderGenerator
+
 class TemplateFile:
     def __init__(
         self,
         source: Path,
         target: Path,
         context_provider: Optional[Callable[[], Dict]] = None,
+        header_generator: Optional[HeaderGenerator] = DefaultHeaderGenerator(),
     ):
         """
         Args:
@@ -18,14 +21,19 @@ class TemplateFile:
         self.source = source
         self.target = target
         self.context_provider = context_provider
-
-    
+        self.header_generator = header_generator
 
     def generate(self, jinja_env: JinjaEnvironment):
         if self.source.suffix == ".j2":
             relative_path = self.source.relative_to(jinja_env.loader.searchpath[0])
             template = jinja_env.get_template(str(relative_path).replace("\\", "/"))
             context = self.context_provider() if self.context_provider else {}
-            self.target.write_text(template.render(context))
+            content = template.render(context)
         else:
-            self.target.write_text(self.source.read_text())
+            content = self.source.read_text()
+
+        if self.header_generator:
+            content = self.header_generator.generate_header(self.target) + content
+
+
+        self.target.write_text(content)

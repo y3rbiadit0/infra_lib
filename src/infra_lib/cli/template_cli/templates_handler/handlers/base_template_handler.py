@@ -6,7 +6,7 @@ import logging
 from jinja2 import Environment as JinjaEnvironment, FileSystemLoader
 
 from .....enums import InfraEnvironment
-from .template_file import TemplateFile
+from ..template_file.template_file import TemplateFile
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

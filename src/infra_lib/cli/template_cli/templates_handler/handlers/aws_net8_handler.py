@@ -2,7 +2,7 @@ from pathlib import Path
 
 from .....enums import InfraEnvironment
 from .base_template_handler import BaseTemplateHandler
-from .template_file import TemplateFile
+from ..template_file.template_file import TemplateFile
 from .util import NETContextPrompter
 
 
