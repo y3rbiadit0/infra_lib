@@ -27,8 +27,8 @@ logging.basicConfig(level=logging.INFO)
 def run_infra(project: str, environment: str):
     """CLI runner to spin up Docker Compose and deploy environment-specific infrastructure."""
     try:
-        env = InfraEnvironment(environment)
         project_root = Path.joinpath(Path(os.getcwd()).resolve(), "infrastructure")
+        env = InfraEnvironment(environment)
         builder = EnvBuilder(project_name=project, environment=env, project_root=project_root)
         builder.execute()
         logger.info("✅ Environment deployed successfully!")

@@ -155,7 +155,7 @@ class EnvBuilder:
         infra_class = getattr(module, class_name)
         return infra_class(
             infrastructure_dir=self.project_root,
-            projects_dir=self.project_root,
+            project_root=self.project_root.parent,
             environment=self.environment,
             env_vars=self.env_vars,
         )

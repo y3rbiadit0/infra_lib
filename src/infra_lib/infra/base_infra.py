@@ -27,7 +27,7 @@ class BaseInfraBuilder(ABC):
     def __init__(
         self,
         infrastructure_dir: Path,
-        projects_dir: Path,
+        project_root: Path,
         environment: InfraEnvironment,
         env_vars: Dict[str, str],
     ):
@@ -41,7 +41,7 @@ class BaseInfraBuilder(ABC):
         """
         self.environment = environment
         self.infrastructure_dir = infrastructure_dir
-        self.projects_dir = projects_dir
+        self.project_root = project_root
         self.env_vars = env_vars
 
     def build(self):

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from .handlers import AWSGenericTemplateHandler, AWSNet8TemplateHandler
+from .handlers import AWSGenericTemplateHandler, AWSNet8TemplateHandler, AWSNet8LambdaTemplateHandler
 
 TEMPLATE_ROOT = Path(__file__).parent / "templates"
 
@@ -8,6 +8,7 @@ TEMPLATE_REGISTRY = {
     "aws": {
         "generic": (AWSGenericTemplateHandler, TEMPLATE_ROOT / "aws" / "generic"),
         "net8": (AWSNet8TemplateHandler, TEMPLATE_ROOT / "aws" / "net8"),
+        "net8_lambda": (AWSNet8LambdaTemplateHandler, TEMPLATE_ROOT / "aws" / "net8_lambda"),
     },
     # "azure": { ... }  # future
 }
