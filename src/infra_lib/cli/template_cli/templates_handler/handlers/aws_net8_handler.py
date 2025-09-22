@@ -58,6 +58,14 @@ class AWSNet8TemplateHandler(BaseTemplateHandler):
                         "project_name": templates_env["project_name"]
                     },
                 ),
+                TemplateFile(
+                    source=self.templates_dir / "aws_config" / "secrets.json",
+                    target=self.project_root / "infrastructure" / "aws_config" / "secrets.json",
+                    context_provider={},
+                ),
+                
+
+
             ]
 
         return []

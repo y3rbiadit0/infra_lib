@@ -35,4 +35,4 @@ class DefaultHeaderGenerator(HeaderGenerator):
         elif ext in [".html", ".xml"]:
             return f"<!-- {header_text} -->\n"
         else:
-            return f"# {header_text}\n"
+            return f""
