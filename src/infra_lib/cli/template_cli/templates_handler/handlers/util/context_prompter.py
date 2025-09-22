@@ -55,7 +55,7 @@ class NETContextPrompter(BaseContextPrompter):
 
         if len(csproj_files) == 1:
             click.echo(f"Found one project: {csproj_files[0].name}")
-            return csproj_files[0]
+            return csproj_files[0].stem
 
         click.echo("Select a project file:")
         for i, file in enumerate(csproj_files, start=1):
@@ -66,10 +66,10 @@ class NETContextPrompter(BaseContextPrompter):
             type=click.IntRange(1, len(csproj_files))
         )
 
-        return csproj_files[choice - 1]
+        return csproj_files[choice - 1].stem
 
     def build_context(self) -> dict:
         """Builds a context dictionary including the selected .csproj file."""
         context = dict(self.defaults)
-        context['csproj_file'] = self.select_csproj()
+        context['project_name'] = self.select_csproj()
         return context

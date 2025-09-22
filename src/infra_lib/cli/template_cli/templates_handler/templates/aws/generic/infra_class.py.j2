@@ -1,5 +1,5 @@
 import os
-from infra_lib import Environment, AWSInfraBuilder, AWSQueueConfig, AWSLambdaParameters
+from infra_lib import InfraEnvironment, AWSInfraBuilder, AWSQueueConfig, AWSLambdaParameters
 
 class {{ env.capitalize() }}Infra(AWSInfraBuilder):
     def build(self):

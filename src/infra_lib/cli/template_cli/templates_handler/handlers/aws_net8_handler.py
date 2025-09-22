@@ -10,12 +10,13 @@ class AWSNet8TemplateHandler(BaseTemplateHandler):
     def get_infra_context(self, env: str) -> dict:
         return {"env": env, "stack_type": self.stack_type}
 
-    def get_env_context(self, env: str) -> dict:
+    def get_env_context(self, env: InfraEnvironment) -> dict:
         return {
-            "TARGET_ENV": env,
-            "AWS_ACCESS_KEY_ID": "test",
-            "AWS_SECRET_ACCESS_KEY": "test",
-            "AWS_DEFAULT_REGION": "us-east-1",
+            "aws_access_key_id": "test",
+            "aws_secret_access_key": "test",
+            "aws_default_region": "us-east-1",
+            "aws_endpoint_url": "http://localhost:4566",
+            "localstack_secrets_manager_url": "http://localstack:4566"
         }
 
     def get_docker_context(self) -> dict:
@@ -45,7 +46,7 @@ class AWSNet8TemplateHandler(BaseTemplateHandler):
                     / "Dockerfile.debug",
                     context_provider=lambda: NETContextPrompter(
                         root_dir=self.project_root, defaults={"dotnet_version": "8.0"}
-                    ).build_context(),
+                    ).build_context() | self.get_env_context(env=infra_environment),
                 )
             ]
         return []

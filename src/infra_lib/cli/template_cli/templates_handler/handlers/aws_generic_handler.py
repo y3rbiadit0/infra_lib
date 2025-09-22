@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from .....enums import InfraEnvironment
 from .base_template_handler import BaseTemplateHandler
 
 class AWSGenericTemplateHandler(BaseTemplateHandler):
@@ -14,14 +15,14 @@ class AWSGenericTemplateHandler(BaseTemplateHandler):
     def __init__(self, templates_dir: Path, project_root: Path, stack_type: str):
         super().__init__(templates_dir, project_root, stack_type, provider="aws")
 
-    def get_infra_context(self, env: str) -> dict:
+    def get_infra_context(self, env: InfraEnvironment) -> dict:
         """Return context for the infra_<env>.py template"""
         return {
             "env": env,
             "stack_type": self.stack_type,
         }
 
-    def get_env_context(self, env: str) -> dict:
+    def get_env_context(self, env: InfraEnvironment) -> dict:
         """Return context for the .env file template"""
         return {
             "TARGET_ENV": env,
