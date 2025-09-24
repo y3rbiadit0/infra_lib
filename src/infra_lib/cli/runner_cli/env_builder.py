@@ -1,3 +1,4 @@
+from functools import cached_property
 from pathlib import Path
 import os
 import sys
@@ -64,11 +65,19 @@ class EnvBuilder:
 			raise FileNotFoundError(f"Docker Compose file {compose_path} not found")
 		return compose_path
 
-	def execute(self, infra_builders: Optional[List[BaseInfraBuilder]] = None):
+	def execute(self):
 		"""Run the full workflow: Docker Compose + infrastructure."""
 		logger.info(f"DEVELOPMENT_MODE={self.environment.value}")
+
+		for infra_builder in self._infra_builders:
+			infra_builder.pre_compose_actions()
+
 		self._run_docker_compose()
-		self._build_infra(infra_builders=infra_builders)
+
+		for infra_builder in self._infra_builders:
+			infra_builder.post_compose_actions()
+
+		self._build_infra()
 
 	def _load_env(self) -> Dict:
 		"""Load environment variables from .env file in environment folder."""
@@ -100,7 +109,7 @@ class EnvBuilder:
 			env_vars=self.env_vars,
 		)
 
-	def _build_infra(self, infra_builders: Optional[List[BaseInfraBuilder]] = None):
+	def _build_infra(self):
 		"""Run project-specific infrastructure builders.
 
 		Args:
@@ -108,14 +117,15 @@ class EnvBuilder:
 		        List of BaseInfraBuilder instances (or subclasses) to run.
 		        If None, automatically loads the environment-specific infra script.
 		"""
-		if infra_builders is None:
-			infra_builders = [self._load_infra_builder()]
-
-		for builder in infra_builders:
+		for builder in self._infra_builders:
 			if not isinstance(builder, BaseInfraBuilder):
 				raise TypeError(f"Expected BaseInfraBuilder, got {type(builder)}")
 			logger.info(f"🏗 Running builder: {builder.__class__.__name__}")
 			builder.build()
+
+	@cached_property
+	def _infra_builders(self) -> List[BaseInfraBuilder]:
+		return [self._load_infra_builder()]
 
 	def _load_infra_builder(self) -> BaseInfraBuilder:
 		"""Dynamically loads the environment-specific infrastructure class.

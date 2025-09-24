@@ -51,3 +51,17 @@ class BaseInfraBuilder(ABC):
 		    NotImplementedError: Must implement provider-specific infrastructure setup.
 		"""
 		raise NotImplementedError("Must implement your own infrastructure setup.")
+
+	def pre_compose_actions(self):
+		"""Hook to run actions before docker-compose up.
+
+		Override in subclass if needed. Default: do nothing.
+		"""
+		logger.debug("pre_compose_actions(): no-op by default")
+
+	def post_compose_actions(self):
+		"""Hook to run actions after docker-compose up.
+
+		Override in subclass if needed. Default: do nothing.
+		"""
+		logger.debug("post_compose_actions(): no-op by default")

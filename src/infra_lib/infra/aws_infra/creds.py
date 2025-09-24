@@ -15,6 +15,6 @@ class CredentialsProvider:
 		return cls(
 			access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
 			secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
-			url=os.getenv("AWS_ENDPOINT_URL"),
+			url=os.getenv("AWS_ENDPOINT_URL").replace("localstack", "localhost"),
 			region=os.getenv("AWS_DEFAULT_REGION"),
 		)
