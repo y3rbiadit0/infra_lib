@@ -8,6 +8,7 @@ from mypy_boto3_sqs import SQSClient
 from .boto_client_factory import BotoClientFactory
 from .aws_services_enum import AwsService
 from .creds import CredentialsProvider
+from .lambda_util import AWSLambdaParameters
 
 
 logger = logging.getLogger(__name__)
@@ -17,7 +18,6 @@ logger = logging.getLogger(__name__)
 class AWSQueueConfig:
 	name: str
 	visibility_timeout: int
-	lambda_target: str
 	batch_size: int = 10
 	batch_window: Optional[int] = None
 	report_batch_item_failures: bool = False
@@ -51,13 +51,14 @@ class QueuesUtil:
 			)
 			logger.info(f"Queue created: {q.name} (Visibility {q.visibility_timeout}s)")
 
-			self._lambda_client.create_event_source_mapping(
-				EventSourceArn=f"arn:aws:sqs:{self.creds.region}:000000000000:{q.name}",
-				FunctionName=q.lambda_target,
-				BatchSize=q.batch_size,
-				MaximumBatchingWindowInSeconds=q.batch_window or 0,
-				FunctionResponseTypes=(
-					["ReportBatchItemFailures"] if q.report_batch_item_failures else []
-				),
-			)
-			logger.info(f"Queue {q.name} linked to Lambda {q.lambda_target}")
+	def attach_lambda(self, lambda_func: AWSLambdaParameters, queue_config: AWSQueueConfig):
+		self._lambda_client.create_event_source_mapping(
+			EventSourceArn=f"arn:aws:sqs:{self.creds.region}:000000000000:{queue_config.name}",
+			FunctionName=lambda_func.function_name,
+			BatchSize=queue_config.batch_size,
+			MaximumBatchingWindowInSeconds=queue_config.batch_window or 0,
+			FunctionResponseTypes=(
+				["ReportBatchItemFailures"] if queue_config.report_batch_item_failures else []
+			),
+		)
+		logger.info(f"Queue {queue_config.name} linked to Lambda {lambda_func.function_name}")
