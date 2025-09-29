@@ -19,8 +19,7 @@ class AWSNet8TemplateHandler(BaseTemplateHandler):
 			"aws_access_key_id": "test",
 			"aws_secret_access_key": "test",
 			"aws_default_region": "us-east-1",
-			"aws_endpoint_url": "http://localhost:4566",
-			"localstack_secrets_manager_url": "http://localstack:4566",
+			"aws_endpoint_url": "http://localstack:4566",
 		}
 
 	def get_docker_context(self) -> dict:
