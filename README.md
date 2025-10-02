@@ -12,6 +12,8 @@ It provides:
 
 Extensible support for multiple cloud providers (currently AWS).
 
+-- Extended docs by [DeepWiki](https://deepwiki.com/) - [Link](https://deepwiki.com/y3rbiadit0/infra_lib)
+
 ### 🚀 **Features**
 
 1. 📦 Template registry with reusable IaC boilerplates (Jinja2-based).
@@ -100,6 +102,7 @@ infrastructure/
 - `Environment folders (local/, stage/, prod/)` → Contain `.env` variables and `infra_*.py` files that describe the infrastructure for that environment.
 
 - `aws_config/` → Stores reusable AWS JSON configuration (e.g., API Gateway routes, Secrets Manager).
+
 
 
 
