@@ -1,6 +1,6 @@
 import logging
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import Optional, Iterable
 
 from mypy_boto3_lambda import LambdaClient
 from mypy_boto3_sqs import SQSClient
@@ -39,7 +39,7 @@ class QueuesUtil:
 	def _lambda_client(self) -> LambdaClient:
 		return self._client_factory.resource(AwsService.LAMBDA)
 
-	def create_queues(self, queues: List[AWSQueueConfig]):
+	def create_queues(self, queues: Iterable[AWSQueueConfig]):
 		for q in queues:
 			self._sqs_client.create_queue(
 				QueueName=q.name,
