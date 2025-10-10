@@ -65,13 +65,10 @@ class APIGatewayUtil:
 		self.apigateway_client.create_deployment(restApiId=api_id, stageName=stage_name)
 
 		endpoint_url = self.apigateway_client.meta.endpoint_url
-		if "localhost" in endpoint_url:
-			# LocalStack URL
-			api_url = f"{endpoint_url}/restapis/{api_id}/{stage_name}/_user_request_"
-		else:
-			# Real AWS URL
-			region = self.apigateway_client.meta.region_name
-			api_url = f"https://{api_id}.execute-api.{region}.amazonaws.com/{stage_name}/"
+
+		scheme = "http" if "localhost" in endpoint_url else "https"
+		region = self.apigateway_client.meta.region_name
+		api_url = f"{scheme}://{api_id}.execute-api.{region}.amazonaws.com/{self.environment}"
 
 		logger.info(f"API Gateway '{api_id}' deployed to stage '{stage_name}'.")
 		logger.info(f"📡 API available at: {api_url}")
