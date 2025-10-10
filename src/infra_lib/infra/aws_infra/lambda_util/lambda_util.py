@@ -161,10 +161,8 @@ class LambdaUtil:
 				integration = method_def.get("x-amazon-apigateway-integration", {})
 				uri = integration.get("uri", "")
 				if lambda_name in uri:
-					if "localhost" in endpoint_url:
-						url = f"{endpoint_url}/restapis/{api_id}/{self.environment}/_user_request_/{resource_path.lstrip('/')}"
-					else:
-						url = f"https://{api_id}.execute-api.{region}.amazonaws.com/{self.environment}/{resource_path}"
+					scheme = "http" if "localhost" in endpoint_url else "https"
+					url = f"{scheme}://{api_id}.execute-api.{region}.amazonaws.com/{self.environment}/{resource_path}"
 
 					logger.info(
 						f"Lambda '{lambda_name}' is integrated with API path '{resource_path}' "
