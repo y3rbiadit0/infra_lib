@@ -1,8 +1,8 @@
 from dataclasses import InitVar, dataclass, field
+import shutil
 from typing import Dict, List, Optional
 import logging
 from pathlib import Path
-import zipfile
 from ..api_gateway_util import APIGatewayUtil
 from mypy_boto3_lambda import LambdaClient
 from mypy_boto3_lambda.literals import RuntimeType
@@ -11,7 +11,7 @@ from mypy_boto3_lambda.literals import RuntimeType
 from ..boto_client_factory import AwsService, BotoClientFactory
 from ....enums import InfraEnvironment
 from ..creds import CredentialsProvider
-from .build_runner import RUNTIME_BUILDERS
+from .lambda_zip_builder import DEFAULT_BUILDER_BY_RUNTIME, BaseLambdaZipBuilder
 
 logger = logging.getLogger(__name__)
 
@@ -46,8 +46,8 @@ class LambdaUtil:
 		return Path.joinpath(self._infrastructure_dir, "out")
 
 	def add_lambda(self, lambda_params: "AWSLambdaParameters"):
-		zip_path = self._build_and_zip_lambda(
-			project_root=lambda_params.project_root,
+		zip_path = self._build_lambda(
+			lambda_params=lambda_params,
 			output_dir=self.output_dir,
 			runtime=lambda_params.runtime,
 		)
@@ -66,34 +66,45 @@ class LambdaUtil:
 			lambda_name=lambda_params.function_name, api_id=lambda_params.api_id
 		)
 
-	def _build_and_zip_lambda(self, project_root: Path, output_dir: Path, runtime: RuntimeType):
+	def _build_lambda(
+		self,
+		lambda_params: "AWSLambdaParameters",
+		output_dir: Path,
+		runtime: RuntimeType,
+	):
 		"""
 		Builds a .NET project in Release mode and zips the output for Lambda deployment.
 		:param project_path: Path to the .NET project (.csproj)
 		:param output_zip: Path to the output zip file
 		"""
-
-		project_root = Path(project_root).resolve()
-
+		project_root = Path(lambda_params.project_root).resolve()
 		output_dir.mkdir(parents=True, exist_ok=True)
-		build_dir = output_dir / "build"
-		build_dir.mkdir(exist_ok=True)
+		
+		build_dir = output_dir / "build" / project_root.name
+		
+		if build_dir.exists():
+			shutil.rmtree(build_dir)
+		build_dir.mkdir(parents=True, exist_ok=True)
 
-		runner_cls = RUNTIME_BUILDERS.get(runtime)
-		if not runner_cls:
-			raise NotImplementedError(f"Build runner for runtime '{runtime}' not implemented")
+		lambda_builder = lambda_params.custom_lambda_builder
 
-		runner = runner_cls()
-		runner.build(project_root, build_dir)
+		if lambda_builder is None:
+			default_lambda_builder_cls = DEFAULT_BUILDER_BY_RUNTIME.get(runtime)
+		
+			if not default_lambda_builder_cls:
+				raise NotImplementedError(
+					f"`custom_lambda_builder` not provided and Default Build runner for runtime '{runtime}' not implemented. Must provide a `custom_lambda_builder` or correct the runtime {runtime}"
+				)
+			lambda_builder = default_lambda_builder_cls()
 
-		# Zip the build directory
-		zip_path = output_dir / f"{project_root.name}.zip"
-		with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-			for file_path in build_dir.rglob("*"):
-				zipf.write(file_path, arcname=file_path.relative_to(build_dir))
+		lambda_zip_file = lambda_builder.build(
+			project_root=project_root, build_dir=build_dir, output_dir=output_dir
+		)
+		
 
-		logger.info(f"Lambda zip created at {zip_path}")
-		return zip_path
+		logger.info(f"Lambda zip created at {lambda_zip_file}")
+		
+		return lambda_zip_file
 
 	def _create_lambda(self, zip_path: str, role: str, lambda_params: "AWSLambdaParameters"):
 		with open(zip_path, "rb") as f:
@@ -184,6 +195,7 @@ class AWSLambdaParameters:
 			"AWS_DEFAULT_REGION",
 		]
 	)
+	custom_lambda_builder: BaseLambdaZipBuilder = None
 
 	def __post_init__(self, env_vars: Dict[str, str]):
 		self._filtered_env_vars = {k: v for k, v in env_vars.items() if k in self.allowed_env_vars}

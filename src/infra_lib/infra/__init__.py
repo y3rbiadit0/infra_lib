@@ -1,4 +1,4 @@
-from .aws_infra import AWSInfraBuilder, AWSLambdaParameters, AWSQueueConfig
+from .aws_infra import AWSInfraBuilder, AWSLambdaParameters, AWSQueueConfig, BaseLambdaZipBuilder
 from .base_infra import BaseInfraBuilder
 
 
@@ -7,4 +7,5 @@ __all__ = [
 	"AWSLambdaParameters",
 	"AWSQueueConfig",
 	"BaseInfraBuilder",
+    "BaseLambdaZipBuilder"
 ]
