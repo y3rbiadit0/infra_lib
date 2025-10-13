@@ -68,14 +68,14 @@ class EnvBuilder:
 		logger.info(f"DEVELOPMENT_MODE={self.environment.value}")
 
 		compose_settings = self._infra_builder.compose_settings()
-		
+
 		pre_compose_actions = compose_settings.pre_compose_actions
 		pre_compose_actions = pre_compose_actions if pre_compose_actions is not None else []
 		for action in pre_compose_actions:
 			action.call()
 
 		self._run_docker_compose(compose_settings=compose_settings)
-	
+
 		post_compose_actions = compose_settings.post_compose_actions
 		post_compose_actions = post_compose_actions if post_compose_actions is not None else []
 		for action in post_compose_actions:
@@ -97,8 +97,10 @@ class EnvBuilder:
 	def _run_docker_compose(self, compose_settings: ComposeSettings):
 		"""Stop, build, and start Docker Compose containers."""
 		logger.info("🛑 Stopping containers and removing volumes...")
-		run_command(f"docker-compose -p {compose_settings.compose_name} down -v", env_vars=self.env_vars)
-		
+		run_command(
+			f"docker-compose -p {compose_settings.compose_name} down -v", env_vars=self.env_vars
+		)
+
 		profiles = " ".join(f"--profile {p}" for p in compose_settings.profiles)
 		logger.info("🚀 Building containers...")
 		run_command(
