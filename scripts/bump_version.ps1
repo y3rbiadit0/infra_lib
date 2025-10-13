@@ -22,9 +22,9 @@ if ($content -match 'version\s*=\s*"(\d+)\.(\d+)\.(\d+)"') {
         Set-Content $pyprojectPath $newContent
         git add $pyprojectPath
         git commit -m "New Release v$newVersion"
-        git tag $newVersion
+        git tag "v$newVersion"
 
-        Write-Host "Committed and tagged version $newVersion."
+        Write-Host "Committed and tagged version v$newVersion."
     } else {
         Write-Host "Operation cancelled."
     }
