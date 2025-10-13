@@ -152,21 +152,15 @@ class LambdaUtil:
 		)
 		gateway_content = gateway_util.gateway_config_file()
 
-		endpoint_url = self._lambda_client.meta.endpoint_url
-		region = self._lambda_client.meta.region_name if "localhost" not in endpoint_url else None
-
 		paths = gateway_content.get("paths", {})
 		for resource_path, methods in paths.items():
 			for method_name, method_def in methods.items():
 				integration = method_def.get("x-amazon-apigateway-integration", {})
 				uri = integration.get("uri", "")
 				if lambda_name in uri:
-					scheme = "http" if "localhost" in endpoint_url else "https"
-					url = f"{scheme}://{api_id}.execute-api.{region}.amazonaws.com/{self.environment}/{resource_path}"
-
 					logger.info(
 						f"Lambda '{lambda_name}' is integrated with API path '{resource_path}' "
-						f"({method_name.upper()}) -> URL: {url}"
+						f"({method_name.upper()}) -> URL: {gateway_util.build_url(api_id=api_id, resource_path=resource_path)}"
 					)
 					return
 		logger.info(
