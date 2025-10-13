@@ -9,7 +9,7 @@ import importlib.util
 
 from ...enums import InfraEnvironment
 from ...utils import run_command
-from ...infra.base_infra import BaseInfraBuilder
+from ...infra.base_infra import BaseInfraBuilder, ComposeSettings
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -27,7 +27,6 @@ class EnvBuilder:
 		self,
 		project_name: str,
 		environment: Optional[InfraEnvironment] = None,
-		compose_name: Optional[str] = "infra",
 		project_root: Optional[Path] = None,
 	):
 		"""
@@ -40,7 +39,6 @@ class EnvBuilder:
 		        Defaults to parent of this file.
 		"""
 		self.project_name = project_name
-		self.compose_name = compose_name or project_name
 		self.project_root = project_root
 
 		if environment is None:
@@ -69,13 +67,19 @@ class EnvBuilder:
 		"""Run the full workflow: Docker Compose + infrastructure."""
 		logger.info(f"DEVELOPMENT_MODE={self.environment.value}")
 
-		for infra_builder in self._infra_builders:
-			infra_builder.pre_compose_actions()
+		compose_settings = self._infra_builder.compose_settings()
+		
+		pre_compose_actions = compose_settings.pre_compose_actions
+		pre_compose_actions = pre_compose_actions if pre_compose_actions is not None else []
+		for action in pre_compose_actions:
+			action.call()
 
-		self._run_docker_compose()
-
-		for infra_builder in self._infra_builders:
-			infra_builder.post_compose_actions()
+		self._run_docker_compose(compose_settings=compose_settings)
+	
+		post_compose_actions = compose_settings.post_compose_actions
+		post_compose_actions = post_compose_actions if post_compose_actions is not None else []
+		for action in post_compose_actions:
+			action.call()
 
 		self._build_infra()
 
@@ -90,21 +94,22 @@ class EnvBuilder:
 		env["TARGET_ENV"] = self.environment.value
 		return env
 
-	def _run_docker_compose(self):
+	def _run_docker_compose(self, compose_settings: ComposeSettings):
 		"""Stop, build, and start Docker Compose containers."""
 		logger.info("🛑 Stopping containers and removing volumes...")
-		run_command(f"docker-compose -p {self.compose_name} down -v", env_vars=self.env_vars)
-
+		run_command(f"docker-compose -p {compose_settings.compose_name} down -v", env_vars=self.env_vars)
+		
+		profiles = " ".join(f"--profile {p}" for p in compose_settings.profiles)
 		logger.info("🚀 Building containers...")
 		run_command(
-			f"docker-compose -p {self.compose_name} --profile {self.environment.value} "
+			f"docker-compose -p {compose_settings.compose_name} {profiles} "
 			f"-f {self.compose_file} build",
 			env_vars=self.env_vars,
 		)
 
 		logger.info("🚀 Starting containers...")
 		run_command(
-			f"docker-compose -p {self.compose_name} --profile {self.environment.value} "
+			f"docker-compose -p {compose_settings.compose_name} {profiles} "
 			f"-f {self.compose_file} up -d",
 			env_vars=self.env_vars,
 		)
@@ -117,15 +122,14 @@ class EnvBuilder:
 		        List of BaseInfraBuilder instances (or subclasses) to run.
 		        If None, automatically loads the environment-specific infra script.
 		"""
-		for builder in self._infra_builders:
-			if not isinstance(builder, BaseInfraBuilder):
-				raise TypeError(f"Expected BaseInfraBuilder, got {type(builder)}")
-			logger.info(f"🏗 Running builder: {builder.__class__.__name__}")
-			builder.build()
+		if not isinstance(self._infra_builder, BaseInfraBuilder):
+			raise TypeError(f"Expected BaseInfraBuilder, got {type(self._infra_builder)}")
+		logger.info(f"🏗 Running builder: {self._infra_builder.__class__.__name__}")
+		self._infra_builder.build()
 
 	@cached_property
-	def _infra_builders(self) -> List[BaseInfraBuilder]:
-		return [self._load_infra_builder()]
+	def _infra_builder(self) -> BaseInfraBuilder:
+		return self._load_infra_builder()
 
 	def _load_infra_builder(self) -> BaseInfraBuilder:
 		"""Dynamically loads the environment-specific infrastructure class.
@@ -164,6 +168,7 @@ class EnvBuilder:
 		return infra_class(
 			infrastructure_dir=self.project_root,
 			project_root=self.project_root.parent,
+			project_name=self.project_name,
 			environment=self.environment,
 			env_vars=self.env_vars,
 		)

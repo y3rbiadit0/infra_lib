@@ -51,12 +51,14 @@ class AWSInfraBuilder(BaseInfraBuilder):
 		self,
 		infrastructure_dir: Path,
 		project_root: Path,
+		project_name: str,
 		environment: InfraEnvironment,
 		env_vars: Dict[str, str],
 		config_dir: str = "aws_config",
 	):
 		self.infrastructure_dir = infrastructure_dir
 		self.project_root = project_root
+		self.project_name = project_name
 		self.config_dir = Path.joinpath(self.infrastructure_dir, config_dir)
 
 		self.creds = CredentialsProvider.from_env(root_dir=self.config_dir)

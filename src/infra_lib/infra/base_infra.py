@@ -1,12 +1,31 @@
 from abc import ABC
+from dataclasses import InitVar, dataclass, field
 from pathlib import Path
 import logging
-from typing import Dict
+from typing import Callable, Dict, List
 
 from ..enums import InfraEnvironment
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+
+
+@dataclass
+class ComposeSettings:
+	environment: InfraEnvironment
+	custom_profiles: InitVar[List[str]]
+
+	compose_name: str = "infra"
+	pre_compose_actions: List[Callable[[], None]] = None
+	post_compose_actions: List[Callable[[], None]] = None
+	_custom_profiles: List[str] = field(init=False, default_factory=list)
+
+	def __post_init__(self, custom_profiles: List[str]):
+		self._custom_profiles = custom_profiles
+
+	@property
+	def profiles(self) -> List[str]:
+		return [self.environment.value, *self._custom_profiles]
 
 
 class BaseInfraBuilder(ABC):
@@ -28,6 +47,7 @@ class BaseInfraBuilder(ABC):
 		self,
 		infrastructure_dir: Path,
 		project_root: Path,
+		project_name: str,
 		environment: InfraEnvironment,
 		env_vars: Dict[str, str],
 	):
@@ -35,13 +55,15 @@ class BaseInfraBuilder(ABC):
 
 		Args:
 		    infrastructure_dir (Path): Path to the infrastructure configuration directory.
-		    projects_dir (Path): Path to the project source directories.
+		    project_root (Path): Path to the project source directories.
+			project_name (str): Project Name in particular execution.
 		    environment (Environment): Deployment environment (local, stage, prod, etc.).
 		    env_vars (Dict[str, str]): Environment variables used for deployment.
 		"""
 		self.environment = environment
 		self.infrastructure_dir = infrastructure_dir
 		self.project_root = project_root
+		self.project_name = project_name
 		self.env_vars = env_vars
 
 	def build(self):
@@ -52,16 +74,5 @@ class BaseInfraBuilder(ABC):
 		"""
 		raise NotImplementedError("Must implement your own infrastructure setup.")
 
-	def pre_compose_actions(self):
-		"""Hook to run actions before docker-compose up.
-
-		Override in subclass if needed. Default: do nothing.
-		"""
-		logger.debug("pre_compose_actions(): no-op by default")
-
-	def post_compose_actions(self):
-		"""Hook to run actions after docker-compose up.
-
-		Override in subclass if needed. Default: do nothing.
-		"""
-		logger.debug("post_compose_actions(): no-op by default")
+	def compose_settings(self) -> ComposeSettings:
+		return ComposeSettings(custom_profiles=[], pre_compose_actions=[], post_compose_actions=[])
