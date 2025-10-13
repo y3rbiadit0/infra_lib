@@ -70,14 +70,15 @@ class APIGatewayUtil:
 		with open(Path.joinpath(self.config_dir, self.gateway_file), "r") as f:
 			return json.load(f)
 
-
 	def build_url(self, api_id: str, resource_path: str = None) -> str:
 		endpoint_url = self.apigateway_client.meta.endpoint_url
 		scheme = "http" if "localhost" in endpoint_url else "https"
-		path_str = f'/{resource_path.strip('/')}' if resource_path else ''
-		if ("localhost" in endpoint_url):
+		path_str = f"/{resource_path.strip('/')}" if resource_path else ""
+		if "localhost" in endpoint_url:
 			# https://docs.localstack.cloud/aws/services/apigateway/#new-api-gateway-implementation
-			return f"{scheme}://localhost:4566/_aws/execute-api/{api_id}/{self.environment}{path_str}"
+			return (
+				f"{scheme}://localhost:4566/_aws/execute-api/{api_id}/{self.environment}{path_str}"
+			)
 		else:
 			region = self.apigateway_client.meta.region_name
 			return f"{scheme}://{api_id}.execute-api.{region}.amazonaws.com/{self.environment}{path_str}"

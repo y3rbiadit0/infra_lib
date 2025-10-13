@@ -79,9 +79,9 @@ class LambdaUtil:
 		"""
 		project_root = Path(lambda_params.project_root).resolve()
 		output_dir.mkdir(parents=True, exist_ok=True)
-		
+
 		build_dir = output_dir / "build" / project_root.name
-		
+
 		if build_dir.exists():
 			shutil.rmtree(build_dir)
 		build_dir.mkdir(parents=True, exist_ok=True)
@@ -90,7 +90,7 @@ class LambdaUtil:
 
 		if lambda_builder is None:
 			default_lambda_builder_cls = DEFAULT_BUILDER_BY_RUNTIME.get(runtime)
-		
+
 			if not default_lambda_builder_cls:
 				raise NotImplementedError(
 					f"`custom_lambda_builder` not provided and Default Build runner for runtime '{runtime}' not implemented. Must provide a `custom_lambda_builder` or correct the runtime {runtime}"
@@ -100,10 +100,9 @@ class LambdaUtil:
 		lambda_zip_file = lambda_builder.build(
 			project_root=project_root, build_dir=build_dir, output_dir=output_dir
 		)
-		
 
 		logger.info(f"Lambda zip created at {lambda_zip_file}")
-		
+
 		return lambda_zip_file
 
 	def _create_lambda(self, zip_path: str, role: str, lambda_params: "AWSLambdaParameters"):

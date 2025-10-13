@@ -7,5 +7,5 @@ __all__ = [
 	"AWSLambdaParameters",
 	"AWSQueueConfig",
 	"BaseInfraBuilder",
-    "BaseLambdaZipBuilder"
+	"BaseLambdaZipBuilder",
 ]

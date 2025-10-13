@@ -22,7 +22,6 @@ class DotnetZipBuilder(BaseLambdaZipBuilder):
 			str(build_dir),
 		]
 
-	
 		run_command(" ".join(build_cmd))
 		return self._zip_folder(
 			project_root=project_root, build_dir=build_dir, output_dir=output_dir
