@@ -98,20 +98,20 @@ class EnvBuilder:
 		"""Stop, build, and start Docker Compose containers."""
 		logger.info("🛑 Stopping containers and removing volumes...")
 		run_command(
-			f"docker-compose -p {compose_settings.compose_name} down -v", env_vars=self.env_vars
+			f"docker compose -p {compose_settings.compose_name} down -v", env_vars=self.env_vars
 		)
 
 		profiles = " ".join(f"--profile {p}" for p in compose_settings.profiles)
 		logger.info("🚀 Building containers...")
 		run_command(
-			f"docker-compose -p {compose_settings.compose_name} {profiles} "
+			f"docker compose -p {compose_settings.compose_name} {profiles} "
 			f"-f {self.compose_file} build",
 			env_vars=self.env_vars,
 		)
 
 		logger.info("🚀 Starting containers...")
 		run_command(
-			f"docker-compose -p {compose_settings.compose_name} {profiles} "
+			f"docker compose -p {compose_settings.compose_name} {profiles} "
 			f"-f {self.compose_file} up -d",
 			env_vars=self.env_vars,
 		)
