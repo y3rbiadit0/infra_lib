@@ -8,6 +8,7 @@ from .creds import CredentialsProvider
 from .eventbridge_util import EventBridgeUtil
 from .lambda_util import LambdaUtil
 from .queues_util import QueuesUtil
+from .sts_util import STSUtil
 from .s3_util import S3Util
 from .secrets_util import SecretsManagerUtil
 from .api_gateway_util import APIGatewayUtil
@@ -45,6 +46,7 @@ class AWSInfraBuilder(BaseInfraBuilder):
 	eventbridge_util: EventBridgeUtil
 	secrets_util: SecretsManagerUtil
 	api_gateway_util: APIGatewayUtil
+	sts_util: STSUtil
 	env_vars: Dict[str, str]
 
 	def __init__(
@@ -91,6 +93,13 @@ class AWSInfraBuilder(BaseInfraBuilder):
 			creds=self.creds,
 			aws_localstack_dir=self.config_dir,
 			environment=environment,
+		)
+		self.sts_util = STSUtil(
+			creds=self.creds,
+			environment=self.environment,
+			infrastructure_dir=self.infrastructure_dir,
+			client_factory=self._client_factory,
+			config_dir=self.config_dir,
 		)
 
 	def build(self):

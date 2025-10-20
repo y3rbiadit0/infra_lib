@@ -8,3 +8,4 @@ class AwsService(StrEnum):
 	S3 = "s3"
 	SECRETS_MANAGER = "secretsmanager"
 	CLOUD_FORMATION = "cloudformation"
+	STS = "sts"
