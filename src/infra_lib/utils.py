@@ -10,5 +10,5 @@ def run_command(cmd: str, check=True, show_output: bool = True, stdin=None, env_
 		cmd, shell=True, stdout=stdout, stderr=stderr, stdin=stdin, env=env_vars
 	)
 	if check and result.returncode != 0:
-		raise RuntimeError(f"Command failed: {' '.join(cmd)}")
+		raise RuntimeError(f"Command failed: '{cmd}'")
 	return result.returncode

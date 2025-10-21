@@ -6,7 +6,7 @@ authors = [
     { name="Franco N. Merenda", email="merenda.franco83@gmail.com" }
 ]
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 dependencies = [
     "boto3>=1.40.33",
     "boto3-stubs[apigateway,cloudformation,ecr,iam,kinesis,lambda,s3,schemas,secretsmanager,signer,sqs,stepfunctions,sts,xray]>=1.39.7",
@@ -17,23 +17,22 @@ dependencies = [
     "python-dotenv>=1.1.1",
 ]
 
+[dependency-groups]
+dev = [
+    "ruff>=0.14.1",
+        "pytest>=8.3.3",
+    "pytest-cov>=5.0.0",
+]
+
 [project.scripts]
 infra-cli = "infra_lib.cli:infra_cli"
 
 [tool.setuptools.package-data]
 "infra_lib.cli.template_cli.templates_handler" = ["templates/**/*", "templates/**/*.env.j2", "templates/**/.*"]
 
-
-
-
 [build-system]
 requires = ["setuptools>=65.5.0", "wheel"]
 build-backend = "setuptools.build_meta"
-
-[dependency-groups]
-dev = [
-    "ruff>=0.13.1",
-]
 
 
 
