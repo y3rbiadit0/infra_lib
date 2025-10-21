@@ -63,7 +63,7 @@ class AWSInfraBuilder(BaseInfraBuilder):
 		self.project_name = project_name
 		self.config_dir = Path.joinpath(self.infrastructure_dir, config_dir)
 
-		self.creds = CredentialsProvider.from_env(root_dir=self.config_dir)
+		self.creds = CredentialsProvider.from_env()
 
 		self._client_factory = BotoClientFactory(self.creds)
 		self.environment = environment
