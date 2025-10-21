@@ -1,20 +1,9 @@
-from infra_lib.infra.aws_infra.boto_client_factory import BotoClientFactory
-import pytest
 from unittest.mock import MagicMock, patch
 
-from infra_lib.infra.aws_infra.creds import CredentialsProvider
-
+from infra_lib.infra.aws_infra.boto_client_factory import BotoClientFactory
 from infra_lib.infra.aws_infra.aws_services_enum import AwsService
 
-
-@pytest.fixture
-def fake_creds():
-	return CredentialsProvider(
-		access_key_id="AKIA_TEST",
-		secret_access_key="SECRET_TEST",
-		region="us-east-1",
-		url="http://localhost:4566",
-	)
+from .aws_fixtures import fake_creds
 
 
 @patch("boto3.session.Session")
