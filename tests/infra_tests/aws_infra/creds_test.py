@@ -36,6 +36,7 @@ def test_from_env_replaces_localstack_with_localhost_in_url():
 	assert not creds.url == "http://localstack:4566"
 	assert creds.url == "http://localstack:4566".replace("localstack", "localhost")
 
+
 @patch.dict("os.environ", {"AWS_ENDPOINT_URL": "http://localhost:4566"})
 def test_from_env_does_not_replace_url_if_no_localstack():
 	"""
