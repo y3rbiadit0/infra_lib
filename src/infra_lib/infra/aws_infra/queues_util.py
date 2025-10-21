@@ -5,6 +5,7 @@ from typing import Optional, Iterable
 from mypy_boto3_lambda import LambdaClient
 from mypy_boto3_sqs import SQSClient
 
+from .sts_util import STSUtil
 from .boto_client_factory import BotoClientFactory
 from .aws_services_enum import AwsService
 from .creds import CredentialsProvider
@@ -30,6 +31,10 @@ class QueuesUtil:
 	def __init__(self, creds: CredentialsProvider, client_factory: BotoClientFactory):
 		self.creds = creds
 		self._client_factory = client_factory
+		self._sts_util = STSUtil(
+			creds=creds,
+			client_factory=client_factory,
+		)
 
 	@property
 	def _sqs_client(self) -> SQSClient:
@@ -52,8 +57,9 @@ class QueuesUtil:
 			logger.info(f"Queue created: {q.name} (Visibility {q.visibility_timeout}s)")
 
 	def attach_lambda(self, lambda_func: AWSLambdaParameters, queue_config: AWSQueueConfig):
+		account_id = self._sts_util.get_account_id()
 		self._lambda_client.create_event_source_mapping(
-			EventSourceArn=f"arn:aws:sqs:{self.creds.region}:000000000000:{queue_config.name}",
+			EventSourceArn=f"arn:aws:sqs:{self.creds.region}:{account_id}:{queue_config.name}",
 			FunctionName=lambda_func.function_name,
 			BatchSize=queue_config.batch_size,
 			MaximumBatchingWindowInSeconds=queue_config.batch_window or 0,

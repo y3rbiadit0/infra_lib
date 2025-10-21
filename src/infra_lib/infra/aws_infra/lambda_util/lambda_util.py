@@ -3,15 +3,17 @@ import shutil
 from typing import Dict, List, Optional
 import logging
 from pathlib import Path
-from ..api_gateway_util import APIGatewayUtil
+
 from mypy_boto3_lambda import LambdaClient
 from mypy_boto3_lambda.literals import RuntimeType
 
 
+from ..api_gateway_util import APIGatewayUtil
 from ..boto_client_factory import AwsService, BotoClientFactory
 from ....enums import InfraEnvironment
 from ..creds import CredentialsProvider
 from .lambda_zip_builder import DEFAULT_BUILDER_BY_RUNTIME, BaseLambdaZipBuilder
+from ..sts_util import STSUtil
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +24,7 @@ class LambdaUtil:
 	environment: InfraEnvironment
 	_client_factory: BotoClientFactory
 	config_dir: Path
+	_sts_util: STSUtil
 
 	def __init__(
 		self,
@@ -36,6 +39,10 @@ class LambdaUtil:
 		self._infrastructure_dir = infrastructure_dir
 		self._client_factory = client_factory
 		self.config_dir = config_dir
+		self._sts_util = STSUtil(
+			creds=creds,
+			client_factory=client_factory,
+		)
 
 	@property
 	def _lambda_client(self) -> LambdaClient:
@@ -52,9 +59,12 @@ class LambdaUtil:
 			runtime=lambda_params.runtime,
 		)
 
+		account_id = self._sts_util.get_account_id()
+		role = "lambda-role"
+
 		self._create_lambda(
 			zip_path=zip_path,
-			role="arn:aws:iam::000000000000:role/lambda-role",
+			role=f"arn:aws:iam::{account_id}:role/{role}",
 			lambda_params=lambda_params,
 		)
 

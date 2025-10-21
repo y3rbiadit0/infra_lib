@@ -3,7 +3,6 @@ from unittest.mock import MagicMock
 
 from infra_lib.infra.aws_infra.boto_client_factory import BotoClientFactory
 from infra_lib.infra.aws_infra.sts_util import STSUtil
-from infra_lib.enums import InfraEnvironment
 from .aws_fixtures import fake_creds
 
 
@@ -16,14 +15,11 @@ def mock_client_factory():
 
 
 @pytest.fixture
-def sts_util(fake_creds, mock_client_factory, tmp_path):
+def sts_util(fake_creds, mock_client_factory):
 	factory, _ = mock_client_factory
 	return STSUtil(
 		creds=fake_creds,
-		environment=InfraEnvironment.local,
-		infrastructure_dir=tmp_path,
 		client_factory=factory,
-		config_dir=tmp_path,
 	)
 
 

@@ -96,10 +96,7 @@ class AWSInfraBuilder(BaseInfraBuilder):
 		)
 		self.sts_util = STSUtil(
 			creds=self.creds,
-			environment=self.environment,
-			infrastructure_dir=self.infrastructure_dir,
 			client_factory=self._client_factory,
-			config_dir=self.config_dir,
 		)
 
 	def build(self):
