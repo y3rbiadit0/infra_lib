@@ -7,9 +7,5 @@ class InfraEnvironment(StrEnum):
 	local = "local"
 
 
-class SupportedStack(StrEnum):
-	net8 = "net8"
-
-
 class InfraProviders(StrEnum):
 	aws = "aws"
