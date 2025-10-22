@@ -3,12 +3,14 @@ import logging
 from pathlib import Path
 import zipfile
 
+from ..arch_enum import AWSLambdaArchitecture
+
 logger = logging.getLogger(__name__)
 
 
 class BaseLambdaZipBuilder(ABC):
 	@abstractmethod
-	def build(self, project_root: Path, build_dir: Path, output_dir: Path) -> Path:
+	def build(self, project_root: Path, build_dir: Path, output_dir: Path, arch: AWSLambdaArchitecture) -> Path:
 		"""Builds the project and outputs to the given directory.
 
 		Returns: Path to lambda zipfile

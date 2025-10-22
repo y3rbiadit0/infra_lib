@@ -1,6 +1,7 @@
 from .infra import (
 	AWSInfraBuilder,
 	AWSLambdaParameters,
+    AWSLambdaArchitecture,
 	BaseLambdaZipBuilder,
 	AWSQueueConfig,
 	BaseInfraBuilder,
@@ -13,6 +14,7 @@ from .utils import run_command
 __all__ = [
 	"AWSInfraBuilder",
 	"AWSLambdaParameters",
+    "AWSLambdaArchitecture",
 	"BaseLambdaZipBuilder",
 	"AWSQueueConfig",
 	"BaseInfraBuilder",

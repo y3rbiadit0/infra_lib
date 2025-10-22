@@ -14,6 +14,7 @@ from ....enums import InfraEnvironment
 from ..creds import CredentialsProvider
 from .lambda_zip_builder import DEFAULT_BUILDER_BY_RUNTIME, BaseLambdaZipBuilder
 from ..sts_util import STSUtil
+from .arch_enum import AWSLambdaArchitecture
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +57,6 @@ class LambdaUtil:
 		zip_path = self._build_lambda(
 			lambda_params=lambda_params,
 			output_dir=self.output_dir,
-			runtime=lambda_params.runtime,
 		)
 
 		account_id = self._sts_util.get_account_id()
@@ -80,7 +80,6 @@ class LambdaUtil:
 		self,
 		lambda_params: "AWSLambdaParameters",
 		output_dir: Path,
-		runtime: RuntimeType,
 	):
 		"""
 		Builds a .NET project in Release mode and zips the output for Lambda deployment.
@@ -99,16 +98,16 @@ class LambdaUtil:
 		lambda_builder = lambda_params.custom_lambda_builder
 
 		if lambda_builder is None:
-			default_lambda_builder_cls = DEFAULT_BUILDER_BY_RUNTIME.get(runtime)
+			default_lambda_builder_cls = DEFAULT_BUILDER_BY_RUNTIME.get(lambda_params.runtime)
 
 			if not default_lambda_builder_cls:
 				raise NotImplementedError(
-					f"`custom_lambda_builder` not provided and Default Build runner for runtime '{runtime}' not implemented. Must provide a `custom_lambda_builder` or correct the runtime {runtime}"
+					f"`custom_lambda_builder` not provided and Default Build runner for runtime '{lambda_params.runtime}' not implemented. Must provide a `custom_lambda_builder` or correct the runtime {runtime}"
 				)
 			lambda_builder = default_lambda_builder_cls()
 
 		lambda_zip_file = lambda_builder.build(
-			project_root=project_root, build_dir=build_dir, output_dir=output_dir
+			project_root=project_root, build_dir=build_dir, output_dir=output_dir, arch=lambda_params.arch
 		)
 
 		logger.info(f"Lambda zip created at {lambda_zip_file}")
@@ -177,6 +176,7 @@ class LambdaUtil:
 		)
 
 
+
 @dataclass
 class AWSLambdaParameters:
 	function_name: str
@@ -187,6 +187,7 @@ class AWSLambdaParameters:
 	api_id: Optional[str]
 	environment: InfraEnvironment
 	runtime: RuntimeType
+	arch: AWSLambdaArchitecture
 	env_vars: InitVar[Dict[str, str]]
 	allowed_env_vars: List[str] = field(
 		default_factory=lambda: [

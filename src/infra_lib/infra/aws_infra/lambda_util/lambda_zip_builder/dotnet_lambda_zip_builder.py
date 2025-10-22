@@ -2,10 +2,11 @@ from pathlib import Path
 
 from .....utils import run_command
 from .base_lambda_zip_builder import BaseLambdaZipBuilder
+from ..arch_enum import AWSLambdaArchitecture
 
 
 class DotnetZipBuilder(BaseLambdaZipBuilder):
-	def build(self, project_root: Path, build_dir: Path, output_dir: Path) -> Path:
+	def build(self, project_root: Path, build_dir: Path, output_dir: Path, arch: AWSLambdaArchitecture) -> Path:
 		project_files = list(project_root.glob("*.csproj"))
 		if not project_files:
 			raise FileNotFoundError(f"No .csproj found in {project_root}")
