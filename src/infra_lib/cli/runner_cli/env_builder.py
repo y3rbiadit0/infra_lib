@@ -9,7 +9,7 @@ import importlib.util
 
 from ...enums import InfraEnvironment
 from ...utils import run_command
-from ...infra.base_infra import BaseInfraBuilder, ComposeSettings
+from ...infra.base_infra import BaseInfra, ComposeSettings
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -124,16 +124,16 @@ class EnvBuilder:
 		        List of BaseInfraBuilder instances (or subclasses) to run.
 		        If None, automatically loads the environment-specific infra script.
 		"""
-		if not isinstance(self._infra_builder, BaseInfraBuilder):
+		if not isinstance(self._infra_builder, BaseInfra):
 			raise TypeError(f"Expected BaseInfraBuilder, got {type(self._infra_builder)}")
 		logger.info(f"🏗 Running builder: {self._infra_builder.__class__.__name__}")
 		self._infra_builder.build()
 
 	@cached_property
-	def _infra_builder(self) -> BaseInfraBuilder:
+	def _infra_builder(self) -> BaseInfra:
 		return self._load_infra_builder()
 
-	def _load_infra_builder(self) -> BaseInfraBuilder:
+	def _load_infra_builder(self) -> BaseInfra:
 		"""Dynamically loads the environment-specific infrastructure class.
 
 		This function imports the `infrastructure` package directly from the

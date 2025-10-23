@@ -1,5 +1,5 @@
 from .aws_infra import AWSInfraBuilder, AWSLambdaParameters, AWSQueueConfig, BaseLambdaZipBuilder, AWSLambdaArchitecture
-from .base_infra import BaseInfraBuilder, ComposeSettings
+from .base_infra import BaseInfra, ComposeSettings
 
 
 __all__ = [
@@ -7,7 +7,7 @@ __all__ = [
 	"AWSLambdaParameters",
 	"AWSLambdaArchitecture",
 	"AWSQueueConfig",
-	"BaseInfraBuilder",
+	"BaseInfra",
 	"BaseLambdaZipBuilder",
 	"ComposeSettings",
 ]

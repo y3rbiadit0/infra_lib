@@ -28,7 +28,7 @@ class ComposeSettings:
 		return [self.environment.value, *self._custom_profiles]
 
 
-class BaseInfraBuilder(ABC):
+class BaseInfra(ABC):
 	"""Base class for managing project infrastructure across cloud providers.
 
 	This class defines the structure and required methods for provider-specific

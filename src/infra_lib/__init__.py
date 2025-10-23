@@ -4,7 +4,7 @@ from .infra import (
     AWSLambdaArchitecture,
 	BaseLambdaZipBuilder,
 	AWSQueueConfig,
-	BaseInfraBuilder,
+	BaseInfra,
 	ComposeSettings,
 )
 from .enums import InfraEnvironment
@@ -17,7 +17,7 @@ __all__ = [
     "AWSLambdaArchitecture",
 	"BaseLambdaZipBuilder",
 	"AWSQueueConfig",
-	"BaseInfraBuilder",
+	"BaseInfra",
 	"ComposeSettings",
 	"InfraEnvironment",
 	"run_command",

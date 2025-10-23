@@ -13,13 +13,13 @@ from .s3_util import S3Util
 from .secrets_util import SecretsManagerUtil
 from .api_gateway_util import APIGatewayUtil
 from ...enums import InfraEnvironment
-from ..base_infra import BaseInfraBuilder
+from ..base_infra import BaseInfra
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-class AWSInfraBuilder(BaseInfraBuilder):
+class AWSInfraBuilder(BaseInfra):
 	"""Builder class to provision and manage AWS infrastructure resources.
 
 	Provides utility methods for interacting with AWS services (S3, Lambda, SQS, EventBridge,
