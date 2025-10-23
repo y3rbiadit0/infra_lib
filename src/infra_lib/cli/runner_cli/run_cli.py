@@ -18,12 +18,6 @@ logging.basicConfig(level=logging.INFO)
 	required=True,
 	help="Project name to run",
 )
-@click.option(
-	"--environment",
-	type=click.Choice([e.value for e in InfraEnvironment]),
-	default=InfraEnvironment.local.value,
-	help="Environment to deploy (local, stage, prod)",
-)
 def run_infra(project: str, environment: str):
 	"""CLI runner to spin up Docker Compose and deploy environment-specific infrastructure."""
 	try:
