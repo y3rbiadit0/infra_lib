@@ -51,7 +51,7 @@ class BaseInfra(ABC):
 		environment: InfraEnvironment,
 		env_vars: Dict[str, str],
 	):
-		"""Initializes the BaseInfraBuilder with project paths and environment.
+		"""Initializes the BaseInfra with project paths and environment.
 
 		Args:
 		    infrastructure_dir (Path): Path to the infrastructure configuration directory.
