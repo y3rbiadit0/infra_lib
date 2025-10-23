@@ -66,13 +66,5 @@ class BaseInfra(ABC):
 		self.project_name = project_name
 		self.env_vars = env_vars
 
-	def build(self):
-		"""Implement project-specific deployment logic.
-
-		Raises:
-		    NotImplementedError: Must implement provider-specific infrastructure setup.
-		"""
-		raise NotImplementedError("Must implement your own infrastructure setup.")
-
 	def compose_settings(self) -> ComposeSettings:
 		return ComposeSettings(custom_profiles=[], pre_compose_actions=[], post_compose_actions=[])

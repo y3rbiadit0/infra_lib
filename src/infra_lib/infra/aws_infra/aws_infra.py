@@ -98,7 +98,3 @@ class AWSInfraBuilder(BaseInfra):
 			creds=self.creds,
 			client_factory=self._client_factory,
 		)
-
-	def build(self):
-		"""Implement project-specific deployment logic"""
-		raise NotImplementedError("Must implement your own infrastructure setup.")
