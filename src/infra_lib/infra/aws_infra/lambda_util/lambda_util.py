@@ -76,6 +76,26 @@ class LambdaUtil:
 			lambda_name=lambda_params.function_name, api_id=lambda_params.api_id
 		)
 
+	def update_lambda_code(self, lambda_params: "AWSLambdaParameters"):
+		"""
+		Builds and updates the code for an existing Lambda function.
+		Note: This only updates the code, not the configuration (e.g., env vars, memory).
+		"""
+		zip_path = self._build_lambda(
+			lambda_params=lambda_params,
+			output_dir=self.output_dir,
+		)
+
+		self._update_lambda_code(
+			zip_path=zip_path,
+			function_name=lambda_params.function_name,
+		)
+
+		# Log the API gateway paths after the update
+		self._log_lambda_paths_from_apigateway(
+			lambda_name=lambda_params.function_name, api_id=lambda_params.api_id
+		)
+
 	def _build_lambda(
 		self,
 		lambda_params: "AWSLambdaParameters",
@@ -135,6 +155,32 @@ class LambdaUtil:
 			logger.info(f"Lambda function '{lambda_params.function_name}' created.")
 		except self._lambda_client.exceptions.ResourceConflictException:
 			logger.info(f"Lambda function '{lambda_params.function_name}' already exists.")
+
+	def _update_lambda_code(self, zip_path: str, function_name: str):
+		"""Updates the code for an existing Lambda function using the provided zip file."""
+		logger.info(f"Updating code for Lambda function '{function_name}'...")
+
+		try:
+			with open(zip_path, "rb") as f:
+				zip_bytes = f.read()
+
+			self._lambda_client.update_function_code(
+				FunctionName=function_name,
+				ZipFile=zip_bytes,
+			)
+
+			logger.info(f"Waiting for update to complete for '{function_name}'...")
+			waiter = self._lambda_client.get_waiter("function_updated")
+			waiter.wait(FunctionName=function_name, WaiterConfig={"Delay": 5, "MaxAttempts": 12})
+
+			logger.info(f"Lambda function code for '{function_name}' successfully updated.")
+
+		except self._lambda_client.exceptions.ResourceNotFoundException:
+			logger.error(f"Lambda function '{function_name}' not found. Cannot update code.")
+			raise
+		except Exception as e:
+			logger.error(f"Error updating lambda code for '{function_name}': {e}")
+			raise
 
 	def _add_lambda_permission_for_apigateway(self, function_name: str, statement_id: str):
 		try:
