@@ -107,7 +107,10 @@ class LambdaUtil:
 			lambda_builder = default_lambda_builder_cls()
 
 		lambda_zip_file = lambda_builder.build(
-			project_root=project_root, build_dir=build_dir, output_dir=output_dir, arch=lambda_params.arch
+			project_root=project_root,
+			build_dir=build_dir,
+			output_dir=output_dir,
+			arch=lambda_params.arch,
 		)
 
 		logger.info(f"Lambda zip created at {lambda_zip_file}")
@@ -174,7 +177,6 @@ class LambdaUtil:
 		logger.info(
 			f"Lambda '{lambda_name}' is not integrated with API --> Check apigateway.json file"
 		)
-
 
 
 @dataclass

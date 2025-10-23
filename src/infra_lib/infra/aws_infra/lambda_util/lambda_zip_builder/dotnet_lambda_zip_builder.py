@@ -6,7 +6,9 @@ from ..arch_enum import AWSLambdaArchitecture
 
 
 class DotnetZipBuilder(BaseLambdaZipBuilder):
-	def build(self, project_root: Path, build_dir: Path, output_dir: Path, arch: AWSLambdaArchitecture) -> Path:
+	def build(
+		self, project_root: Path, build_dir: Path, output_dir: Path, arch: AWSLambdaArchitecture
+	) -> Path:
 		project_files = list(project_root.glob("*.csproj"))
 		if not project_files:
 			raise FileNotFoundError(f"No .csproj found in {project_root}")

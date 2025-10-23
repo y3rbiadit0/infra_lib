@@ -1,7 +1,7 @@
 from .infra import (
 	AWSInfraBuilder,
 	AWSLambdaParameters,
-    AWSLambdaArchitecture,
+	AWSLambdaArchitecture,
 	BaseLambdaZipBuilder,
 	AWSQueueConfig,
 	BaseInfra,
@@ -14,12 +14,12 @@ from .cli import infra_task
 __all__ = [
 	"AWSInfraBuilder",
 	"AWSLambdaParameters",
-    "AWSLambdaArchitecture",
+	"AWSLambdaArchitecture",
 	"BaseLambdaZipBuilder",
 	"AWSQueueConfig",
 	"BaseInfra",
 	"ComposeSettings",
 	"InfraEnvironment",
 	"run_command",
-    "infra_task",
+	"infra_task",
 ]

@@ -1,4 +1,10 @@
-from .aws_infra import AWSInfraBuilder, AWSLambdaParameters, AWSQueueConfig, BaseLambdaZipBuilder, AWSLambdaArchitecture
+from .aws_infra import (
+	AWSInfraBuilder,
+	AWSLambdaParameters,
+	AWSQueueConfig,
+	BaseLambdaZipBuilder,
+	AWSLambdaArchitecture,
+)
 from .base_infra import BaseInfra, ComposeSettings
 
 
