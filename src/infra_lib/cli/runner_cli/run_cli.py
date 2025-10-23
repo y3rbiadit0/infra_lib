@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.INFO)
 	help="Project name to run",
 )
 @click.option(
-	"--environment",
+    "-e", "--environment",
 	type=click.Choice([InfraEnvironment.local.value, InfraEnvironment.stage.value]),
 	default=InfraEnvironment.local.value,
 	help="Environment to deploy (local, stage)",
