@@ -2,10 +2,10 @@ import logging
 from pathlib import Path
 from typing import Callable, Optional
 
-from ...infra.base_infra import BaseInfra, ComposeSettings
-from ...utils import run_command  # Assuming you have a run_command util
+from ...infra.base_infra import ComposeSettings
+from ...utils import run_command
 from ..base_env_builder import BaseEnvBuilder
-from .task import TASK_REGISTRY
+from .task import get_tasks_from_class
 from ...enums import InfraEnvironment
 
 logger = logging.getLogger(__name__)
@@ -66,12 +66,9 @@ class EnvBuilder(BaseEnvBuilder):
     def _run_local(self):
         """Runs the conventional 'setup' task for the local environment."""
         
-        if self.environment != InfraEnvironment.local:
-            logger.warning(f"`run` command is only intended for Local Environment")
+        if self.environment != InfraEnvironment.local and self.environment != InfraEnvironment.stage:
+            logger.warning(f"`run` command is only intended for `local`/`stage` Environment")
             return
-
-        if not isinstance(self.infra_class, BaseInfra):
-            raise TypeError(f"Expected BaseInfra, got {type(self.infra_class)}")
 
         entrypoint = self._look_for_entrypoint()
         
@@ -89,12 +86,8 @@ class EnvBuilder(BaseEnvBuilder):
         entrypoint_task_name = "setup"
         setup_task_fn = None
         
-        if entrypoint_task_name in TASK_REGISTRY:
-            task_func = TASK_REGISTRY[entrypoint_task_name]
-            task_class_name = task_func.__qualname__.split('.')[0]
-            local_infra_class_has_task_func = task_class_name == self.infra_class.__class__.__name__
-            if local_infra_class_has_task_func:
-                setup_task_fn = task_func
+        tasks = get_tasks_from_class(self.infra_class)
+        setup_task_fn = tasks.get(entrypoint_task_name)
 
         if setup_task_fn is None:
             logger.warning(f"No '@task' named 'setup' found for '{self.infra_class.__class__.__name__}'.")

@@ -9,7 +9,7 @@ from typing import Dict, Optional, Type
 from dotenv import load_dotenv
 
 from ..enums import InfraEnvironment
-from ..infra.base_infra import BaseInfra  # Changed to BaseInfra
+from ..infra.base_infra import BaseInfra
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +21,7 @@ class BaseEnvBuilder:
     and dynamic discovery of infrastructure classes.
     """
     project_name: str
+    env_vars: Dict[str, str]
 
     def __init__(
         self,
@@ -45,6 +46,9 @@ class BaseEnvBuilder:
         else:
             self.environment = environment
 
+        self.env_vars = self._load_env()
+
+
     @property
     def environment_dir(self) -> Path:
         env_dir = self.project_root / self.environment.value
@@ -52,13 +56,13 @@ class BaseEnvBuilder:
             raise FileNotFoundError(f"Environment folder {env_dir} not found")
         return env_dir
 
-    @cached_property
-    def env_vars(self) -> Dict:
+    def _load_env(self) -> Dict[str, str]:
         dotenv_path = next(self.environment_dir.glob(".env*"), None)
         if dotenv_path is None:
             raise FileNotFoundError(f"No .env file found in {self.environment_dir}")
+        
         load_dotenv(dotenv_path)
-
+        
         env = os.environ.copy()
         env["PROJECT_NAME"] = self.project_name
         env["TARGET_ENV"] = self.environment.value
@@ -85,14 +89,19 @@ class BaseEnvBuilder:
         if not module_path.is_file():
             raise FileNotFoundError(f"Infrastructure entrypoint not found at {module_path}")
 
-        # Use a consistent module name
-        spec = importlib.util.spec_from_file_location("infrastructure_entrypoint", module_path)
+        spec = importlib.util.spec_from_file_location("infrastructure", module_path)
         module = importlib.util.module_from_spec(spec)
-        sys.modules["infrastructure_entrypoint"] = module
+        sys.modules["infrastructure"] = module
         spec.loader.exec_module(module)
 
         class_name = f"{self.environment.value.capitalize()}Infra"
         if not hasattr(module, class_name):
             raise AttributeError(f"Class '{class_name}' not found in {module_path}")
+        
+        infra_class = getattr(module, class_name)
+        if not issubclass(infra_class, BaseInfra):
+            logger.error(f"Class '{infra_class.__name__}' is not a valid infra class.")
+            logger.error("Please inherit from 'BaseInfra' to enable tasks.")
+            sys.exit(1)
 
-        return getattr(module, class_name)
+        return infra_class  

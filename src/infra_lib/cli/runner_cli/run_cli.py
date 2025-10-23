@@ -18,6 +18,12 @@ logging.basicConfig(level=logging.INFO)
 	required=True,
 	help="Project name to run",
 )
+@click.option(
+	"--environment",
+	type=click.Choice([InfraEnvironment.local.value, InfraEnvironment.stage.value]),
+	default=InfraEnvironment.local.value,
+	help="Environment to deploy (local, stage)",
+)
 def run_infra(project: str, environment: str):
 	"""CLI runner to spin up Docker Compose and deploy environment-specific infrastructure."""
 	try:
@@ -25,10 +31,10 @@ def run_infra(project: str, environment: str):
 		env = InfraEnvironment(environment)
 		builder = EnvBuilder(project_name=project, environment=env, project_root=project_root)
 		builder.execute()
-		logger.info("✅ Environment deployed successfully!")
+		logger.info(f"✅ {environment.capitalize()} environment is up and running!")
 
 	except Exception as e:
-		logger.error(f"❌ Error deploying environment: {e} {e.__traceback__}")
+		logger.error(f"❌ Error running {environment} environment: {e}", exc_info=True)
 		sys.exit(1)
 
 

@@ -1,7 +1,6 @@
 import click
-from .runner_cli import run_infra
+from .runner_cli import run_infra, deploy_infra
 from .template_cli import template_cli
-
 
 @click.group()
 def infra_cli():
@@ -9,9 +8,9 @@ def infra_cli():
 	pass
 
 
-# Register commands
-infra_cli.add_command(run_infra)
 infra_cli.add_command(template_cli)
+infra_cli.add_command(run_infra)
+infra_cli.add_command(deploy_infra)
 
 if __name__ == "__main__":
 	infra_cli()
