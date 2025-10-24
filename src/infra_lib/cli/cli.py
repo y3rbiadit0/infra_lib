@@ -6,7 +6,7 @@ from .__version__ import __version__
 
 
 @click.group()
-@click.version_option(version=__version__, prog_name="Infra CLI")
+@click.version_option(version=__version__, prog_name="infra-cli")
 def infra_cli():
 	"""Infra CLI for creating and managing infrastructure templates."""
 	pass
