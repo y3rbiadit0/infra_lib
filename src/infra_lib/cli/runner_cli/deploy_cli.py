@@ -75,11 +75,11 @@ def deploy_infra(task_name: str, project: str, environment: str):
 			project_name=project, project_root=project_root, environment=env_enum
 		)
 
-		infra_class = env_builder.infra_class
-		task_func = _get_deploy_task(task_name, environment, infra_class)
+		infra_instance = env_builder.infra_instance
+		task_func = _get_deploy_task(task_name, environment, infra_instance)
 
 		logger.info(f"🚀 Executing task '{task_name}' on '{environment}'...")
-		task_func(infra_class)
+		task_func(infra_instance)
 		logger.info(f"✅ Task '{task_name}' completed successfully!")
 
 	except (FileNotFoundError, AttributeError) as e:
@@ -91,7 +91,7 @@ def deploy_infra(task_name: str, project: str, environment: str):
 
 
 def _get_deploy_task(
-	task_name: str, environment: InfraEnvironment, infra_class: BaseInfra
+	task_name: str, environment: InfraEnvironment, infra_instance: BaseInfra
 ) -> Callable:
 	"""
 	Retrieves a specific task function based on name, or lists available
@@ -99,7 +99,7 @@ def _get_deploy_task(
 
 	Uses click for styled output and error handling.
 	"""
-	available_tasks = get_tasks_from_class(infra_class)
+	available_tasks = get_tasks_from_class(infra_instance)
 
 	if not task_name:
 		click.echo("Please specify a task.")

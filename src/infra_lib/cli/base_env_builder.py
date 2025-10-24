@@ -71,7 +71,7 @@ class BaseEnvBuilder:
 		return env
 
 	@cached_property
-	def infra_class(self) -> BaseInfra:
+	def infra_instance(self) -> BaseInfra:
 		"""Loads and instantiates the environment-specific infrastructure class."""
 		infra_class = self._load_infra_class()
 		return infra_class(

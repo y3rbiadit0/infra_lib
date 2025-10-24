@@ -20,7 +20,7 @@ class EnvBuilder(BaseEnvBuilder):
 		"""Run the full workflow: Docker Compose + infrastructure."""
 		logger.info(f"Executing workflow for environment: {self.environment.value}")
 
-		compose_settings = self.infra_class.compose_settings()
+		compose_settings = self.infra_instance.compose_settings()
 
 		for action in compose_settings.pre_compose_actions or []:
 			action()
@@ -78,7 +78,7 @@ class EnvBuilder(BaseEnvBuilder):
 			logger.info("Skipping setup task execution.")
 			return
 
-		entrypoint(self.infra_class)
+		entrypoint(self.infra_instance)
 		logger.info("✅ Local 'setup' task completed.")
 
 	def _look_for_entrypoint(self) -> Optional[Callable[[], None]]:
@@ -88,12 +88,12 @@ class EnvBuilder(BaseEnvBuilder):
 		entrypoint_task_name = "setup"
 		setup_task_fn = None
 
-		tasks = get_tasks_from_class(self.infra_class)
+		tasks = get_tasks_from_class(self.infra_instance)
 		setup_task_fn = tasks.get(entrypoint_task_name)
 
 		if setup_task_fn is None:
 			logger.warning(
-				f"No '@task' named 'setup' found for '{self.infra_class.__class__.__name__}'."
+				f"No '@task' named 'setup' found for '{self.infra_instance.__class__.__name__}'."
 			)
 			return None
 		return setup_task_fn
