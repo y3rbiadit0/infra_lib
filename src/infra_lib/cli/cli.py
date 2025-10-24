@@ -1,9 +1,12 @@
 import click
+
 from .runner_cli import run_infra, deploy_infra
 from .template_cli import template_cli
+from .__version__ import __version__
 
 
 @click.group()
+@click.version_option(version=__version__, prog_name="Infra CLI")
 def infra_cli():
 	"""Infra CLI for creating and managing infrastructure templates."""
 	pass
