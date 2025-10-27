@@ -1,14 +1,16 @@
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, List, Protocol, Union
+from typing import Any, List, Protocol, TypeVar, Union
 
 from infra_lib.infra.enums import InfraEnvironment
 
 from ....infra.env_context import EnvironmentContext
 
+EnvironmentContextType = TypeVar("EnvironmentContextType", bound=EnvironmentContext)
 
-OpHandlerFunc = Callable[[EnvironmentContext], Any]
-OpHandlerMethod = Callable[[Any, EnvironmentContext], Any]
+OpHandlerFunc = Callable[[EnvironmentContextType], Any]
+OpHandlerMethod = Callable[[Any, EnvironmentContextType], Any]
+
 
 OpHandler = Union[OpHandlerFunc, OpHandlerMethod]
 

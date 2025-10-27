@@ -42,7 +42,7 @@ def run_cli(environment: str, project_root: Path, operations: tuple[str]):
 	# Allows imports from `infra.`
 	if project_root.parent not in sys.path:
 		sys.path.insert(0, str(project_root.parent))
-	
+
 	try:
 		operations_dir = project_root / "operations"
 		discover_ops(operations_dir)
