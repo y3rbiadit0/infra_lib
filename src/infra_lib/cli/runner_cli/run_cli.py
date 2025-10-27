@@ -1,15 +1,15 @@
 import logging
 import sys
 import os
-import inspect  # Added
+import inspect
 from pathlib import Path
-from typing import Set, List, Dict, Any, Type  # Added Dict, Any, Type
+from typing import Set, List, Dict, Any, Type
 import click
 
 from .infra_op_decorator import OP_REGISTRY, InfraOp
 from .context_loader import load_env_context_from_arg, discover_ops
 from ...infra import InfraEnvironment
-from ..env_context import EnvironmentContext
+from ...infra.env_context import EnvironmentContext
 from .exceptions import ConfigError, OpError, CycleError
 
 logger = logging.getLogger(__name__)
@@ -38,6 +38,11 @@ _INSTANCE_CACHE: Dict[Type, Any] = {}
 def run_cli(environment: str, project_root: Path, operations: tuple[str]):
 	"""Run infrastructure operations for a specified environment."""
 	env = InfraEnvironment(environment)
+
+	# Allows imports from `infra.`
+	if project_root.parent not in sys.path:
+		sys.path.insert(0, str(project_root.parent))
+	
 	try:
 		operations_dir = project_root / "operations"
 		discover_ops(operations_dir)
@@ -52,7 +57,7 @@ def run_cli(environment: str, project_root: Path, operations: tuple[str]):
 		ops_to_run: List[str]
 		if not operations:
 			logger.info("Running all available operations...")
-			ops_to_run = list(OP_REGISTRY.keys())
+			ops_to_run = list(OP_REGISTRY.ikeys())
 		else:
 			logger.info(f"Running specified operations: {', '.join(operations)}")
 			ops_to_run = list(operations)

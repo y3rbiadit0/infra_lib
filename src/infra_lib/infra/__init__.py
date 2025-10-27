@@ -1,20 +1,23 @@
 from .aws_infra import (
-	AWSInfraBuilder,
+	AWSInfraProvider,
 	AWSLambdaParameters,
 	AWSQueueConfig,
 	BaseLambdaZipBuilder,
 	AWSLambdaArchitecture,
 )
-from .base_infra import BaseInfra, ComposeSettings
+from .base_infra import BaseInfraProvider, ComposeSettings
 from .enums import InfraEnvironment
+from .env_context import EnvironmentContext, AWSEnvironmentContext
 
 __all__ = [
-	"AWSInfraBuilder",
+	"AWSInfraProvider",
 	"AWSLambdaParameters",
 	"AWSLambdaArchitecture",
 	"AWSQueueConfig",
-	"BaseInfra",
+	"BaseInfraProvider",
 	"BaseLambdaZipBuilder",
 	"ComposeSettings",
 	"InfraEnvironment",
+	"EnvironmentContext",
+	"AWSEnvironmentContext",
 ]

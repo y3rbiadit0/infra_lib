@@ -16,17 +16,17 @@ class APIGatewayUtil:
 	creds: CredentialsProvider
 	_client_factory: BotoClientFactory
 	environment: InfraEnvironment
-	config_dir: Path
+	aws_config_dir: Path
 
 	def __init__(
 		self,
 		creds: CredentialsProvider,
-		config_dir: Path,
+		aws_config_dir: Path,
 		environment: InfraEnvironment,
 		client_factory: BotoClientFactory,
 	):
 		self.creds = creds
-		self.config_dir: Path = config_dir
+		self.aws_config_dir: Path = aws_config_dir
 		self.environment = environment
 		self._client_factory = client_factory
 		self.gateway_file = "apigateway.json"
@@ -42,7 +42,7 @@ class APIGatewayUtil:
 		)
 		self._import_api_definition(
 			api_id=api_id,
-			json_file=Path.joinpath(self.config_dir, self.gateway_file),
+			json_file=Path.joinpath(self.aws_config_dir, self.gateway_file),
 		)
 		self._deploy_api_gateway(api_id, stage_name=self.environment)
 
@@ -67,7 +67,7 @@ class APIGatewayUtil:
 		logger.info(f"📡 API available at: {self.build_url(api_id=api_id)}")
 
 	def gateway_config_file(self) -> Dict:
-		with open(Path.joinpath(self.config_dir, self.gateway_file), "r") as f:
+		with open(Path.joinpath(self.aws_config_dir, self.gateway_file), "r") as f:
 			return json.load(f)
 
 	def build_url(self, api_id: str, resource_path: str = None) -> str:

@@ -28,7 +28,7 @@ def secrets_util(fake_creds, mock_client_factory, tmp_path):
 	return SecretsManagerUtil(
 		creds=fake_creds,
 		client_factory=factory,
-		config_dir=tmp_path,
+		aws_config_dir=tmp_path,
 	)
 
 

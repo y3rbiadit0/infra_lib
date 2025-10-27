@@ -22,11 +22,11 @@ class SecretsManagerUtil:
 		self,
 		creds: CredentialsProvider,
 		client_factory: BotoClientFactory,
-		config_dir: Path,
+		aws_config_dir: Path,
 	):
 		self.creds = creds
 		self._client_factory = client_factory
-		self.config_dir = config_dir
+		self.config_dir = aws_config_dir
 
 	@property
 	def secrets_client(self) -> SecretsManagerClient:

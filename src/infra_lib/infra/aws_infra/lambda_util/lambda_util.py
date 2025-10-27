@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 class LambdaUtil:
-	_infrastructure_dir: Path
+	_infra_dir: Path
 	creds: CredentialsProvider
 	environment: InfraEnvironment
 	_client_factory: BotoClientFactory
@@ -31,13 +31,13 @@ class LambdaUtil:
 		self,
 		creds: CredentialsProvider,
 		environment: InfraEnvironment,
-		infrastructure_dir: Path,
+		project_root: Path,
 		client_factory: BotoClientFactory,
 		config_dir: Path,
 	):
 		self.creds = creds
 		self.environment = environment
-		self._infrastructure_dir = infrastructure_dir
+		self._infra_dir = project_root
 		self._client_factory = client_factory
 		self.config_dir = config_dir
 		self._sts_util = STSUtil(
@@ -51,7 +51,7 @@ class LambdaUtil:
 
 	@property
 	def output_dir(self) -> Path:
-		return Path.joinpath(self._infrastructure_dir, "out")
+		return Path.joinpath(self._infra_dir, "out")
 
 	def add_lambda(self, lambda_params: "AWSLambdaParameters"):
 		zip_path = self._build_lambda(
@@ -203,7 +203,7 @@ class LambdaUtil:
 		"""
 		gateway_util = APIGatewayUtil(
 			creds=self.creds,
-			config_dir=self.config_dir,
+			aws_config_dir=self.config_dir,
 			environment=self.environment,
 			client_factory=self._client_factory,
 		)

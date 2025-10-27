@@ -1,26 +1,27 @@
 from .infra import (
-	AWSInfraBuilder,
+	AWSInfraProvider,
 	AWSLambdaParameters,
 	AWSLambdaArchitecture,
 	BaseLambdaZipBuilder,
 	AWSQueueConfig,
-	BaseInfra,
+	BaseInfraProvider,
 	ComposeSettings,
 )
-from .infra import InfraEnvironment
+from .infra import InfraEnvironment, EnvironmentContext, AWSEnvironmentContext
 from .utils import run_command
-from .cli import infra_operation, EnvironmentContext
+from .cli import infra_operation
 
 __all__ = [
-	"AWSInfraBuilder",
+	"AWSInfraProvider",
 	"AWSLambdaParameters",
 	"AWSLambdaArchitecture",
 	"BaseLambdaZipBuilder",
 	"AWSQueueConfig",
-	"BaseInfra",
+	"BaseInfraProvider",
 	"ComposeSettings",
 	"InfraEnvironment",
 	"EnvironmentContext",
+	"AWSEnvironmentContext",
 	"run_command",
 	"infra_operation",
 ]

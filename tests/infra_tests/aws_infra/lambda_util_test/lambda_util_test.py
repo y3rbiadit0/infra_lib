@@ -22,7 +22,7 @@ def lambda_util(tmp_path, mock_lambda_client, mock_sts_util):
 	util = LambdaUtil(
 		creds=MagicMock(),
 		environment=MagicMock(),
-		infrastructure_dir=tmp_path,
+		project_root=tmp_path,
 		client_factory=MagicMock(),
 		config_dir=tmp_path,
 	)

@@ -1,4 +1,3 @@
-from pathlib import Path
 import logging
 from typing import Dict
 
@@ -12,14 +11,14 @@ from .sts_util import STSUtil
 from .s3_util import S3Util
 from .secrets_util import SecretsManagerUtil
 from .api_gateway_util import APIGatewayUtil
-from ..enums import InfraEnvironment
-from ..base_infra import BaseInfra
+from ..base_infra import BaseInfraProvider
+from ..env_context.aws_env_context import AWSEnvironmentContext
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-class AWSInfraBuilder(BaseInfra):
+class AWSInfraProvider(BaseInfraProvider):
 	"""Builder class to provision and manage AWS infrastructure resources.
 
 	Provides utility methods for interacting with AWS services (S3, Lambda, SQS, EventBridge,
@@ -49,50 +48,36 @@ class AWSInfraBuilder(BaseInfra):
 	sts_util: STSUtil
 	env_vars: Dict[str, str]
 
-	def __init__(
-		self,
-		infrastructure_dir: Path,
-		project_root: Path,
-		project_name: str,
-		environment: InfraEnvironment,
-		env_vars: Dict[str, str],
-		config_dir: str = "aws_config",
-	):
-		self.infrastructure_dir = infrastructure_dir
-		self.project_root = project_root
-		self.project_name = project_name
-		self.config_dir = Path.joinpath(self.infrastructure_dir, config_dir)
+	def __init__(self, env_context: AWSEnvironmentContext):
+		super().__init__(env_context=env_context)
 
 		self.creds = CredentialsProvider.from_env()
-
 		self._client_factory = BotoClientFactory(self.creds)
-		self.environment = environment
-		self.env_vars = env_vars
 
 		self.secrets_util = SecretsManagerUtil(
 			creds=self.creds,
+			aws_config_dir=env_context.aws_config_dir(),
 			client_factory=self._client_factory,
-			config_dir=self.config_dir,
 		)
 		self.s3_util = S3Util(creds=self.creds, client_factory=self._client_factory)
 		self.queues_util = QueuesUtil(creds=self.creds, client_factory=self._client_factory)
 		self.api_gateway_util = APIGatewayUtil(
 			creds=self.creds,
-			environment=self.environment,
+			environment=env_context.env(),
+			aws_config_dir=env_context.aws_config_dir(),
 			client_factory=self._client_factory,
-			config_dir=self.config_dir,
 		)
 		self.lambda_util = LambdaUtil(
 			creds=self.creds,
-			environment=self.environment,
-			infrastructure_dir=self.infrastructure_dir,
+			environment=env_context.env(),
+			config_dir=env_context.aws_config_dir(),
+			project_root=env_context.project_root(),
 			client_factory=self._client_factory,
-			config_dir=self.config_dir,
 		)
 		self.eventbridge_util = EventBridgeUtil(
 			creds=self.creds,
-			aws_localstack_dir=self.config_dir,
-			environment=environment,
+			environment=env_context.env(),
+			aws_localstack_dir=env_context.aws_config_dir(),
 		)
 		self.sts_util = STSUtil(
 			creds=self.creds,

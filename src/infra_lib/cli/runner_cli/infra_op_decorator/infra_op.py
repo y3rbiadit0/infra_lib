@@ -4,7 +4,7 @@ from typing import Any, List, Protocol, Union
 
 from infra_lib.infra.enums import InfraEnvironment
 
-from ...env_context import EnvironmentContext
+from ....infra.env_context import EnvironmentContext
 
 
 OpHandlerFunc = Callable[[EnvironmentContext], Any]

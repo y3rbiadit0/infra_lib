@@ -4,6 +4,8 @@ from pathlib import Path
 import logging
 from typing import Callable, Dict, List
 
+from infra_lib.infra.env_context import EnvironmentContext
+
 from .enums import InfraEnvironment
 
 logger = logging.getLogger(__name__)
@@ -28,43 +30,9 @@ class ComposeSettings:
 		return [self.environment.value, *self._custom_profiles]
 
 
-class BaseInfra(ABC):
-	"""Base class for managing project infrastructure across cloud providers.
-
-	This class defines the structure and required methods for provider-specific
-	infrastructure builders. It serves as the common entry point for deploying
-	infrastructure using cloud-specific utilities.
-
-	Attributes:
-	    env_vars (Dict[str, str]): Environment variables used for deployment.
-	    environment (Environment): Target deployment environment (e.g., local, stage, prod).
-	"""
-
-	env_vars: Dict[str, str]
-	environment: InfraEnvironment
-
+class BaseInfraProvider(ABC):
 	def __init__(
 		self,
-		infrastructure_dir: Path,
-		project_root: Path,
-		project_name: str,
-		environment: InfraEnvironment,
-		env_vars: Dict[str, str],
+		env_context: EnvironmentContext,
 	):
-		"""Initializes the BaseInfra with project paths and environment.
-
-		Args:
-		    infrastructure_dir (Path): Path to the infrastructure configuration directory.
-		    project_root (Path): Path to the project source directories.
-			project_name (str): Project Name in particular execution.
-		    environment (Environment): Deployment environment (local, stage, prod, etc.).
-		    env_vars (Dict[str, str]): Environment variables used for deployment.
-		"""
-		self.environment = environment
-		self.infrastructure_dir = infrastructure_dir
-		self.project_root = project_root
-		self.project_name = project_name
-		self.env_vars = env_vars
-
-	def compose_settings(self) -> ComposeSettings:
-		return ComposeSettings(custom_profiles=[], pre_compose_actions=[], post_compose_actions=[])
+		self.env_context = env_context

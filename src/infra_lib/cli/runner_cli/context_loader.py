@@ -1,10 +1,11 @@
 import importlib.util
+import inspect
 import logging
 from pathlib import Path
 import sys
 from types import ModuleType
 
-from ..env_context import EnvironmentContext
+from ...infra.env_context import EnvironmentContext
 from .exceptions import ConfigError
 from ...infra import InfraEnvironment
 
@@ -37,14 +38,14 @@ def load_env_context_from_arg(env: InfraEnvironment, project_root: Path) -> Envi
 	Loads the environment-specific Context by finding and instantiating
 	the EnvironmentContext subclass defined in 'env.py'.
 	"""
-	config_dir = Path.joinpath(project_root, "environments", env.value)
-	config_path = Path.joinpath(config_dir, f"{env.value}.py")
-	logger.info(f"Loading environment config from: {config_path}")
+	environment_dir = Path.joinpath(project_root, "environments", env.value)
+	environment_py_path = Path.joinpath(environment_dir, f"{env.value}.py")
+	logger.info(f"Loading environment config from: {environment_py_path}")
 
-	if not config_path.exists():
-		raise ConfigError(f"Config file not found: {config_path}")
+	if not environment_py_path.exists():
+		raise ConfigError(f"Config file not found: {environment_py_path}")
 
-	module = _import_module_from_path(f"infra.environments.{env.value}", config_path)
+	module = _import_module_from_path(f"infra.environments.{env.value}", environment_py_path)
 
 	env_context_class = None
 	for name, obj in module.__dict__.items():
@@ -52,21 +53,24 @@ def load_env_context_from_arg(env: InfraEnvironment, project_root: Path) -> Envi
 			isinstance(obj, type)
 			and issubclass(obj, EnvironmentContext)
 			and obj is not EnvironmentContext
+			and not inspect.isabstract(obj)
 		):
 			env_context_class = obj
 			break
 
 	if env_context_class is None:
 		raise ConfigError(
-			f"{config_path} must define a class that inherits from EnvironmentContext"
+			f"{environment_py_path} must define a class that inherits from EnvironmentContext"
 		)
 
 	try:
-		env_context_instance = env_context_class(config_dir=config_dir)
+		env_context_instance = env_context_class(
+			project_root=project_root, environment_dir=environment_dir
+		)
 		env_context_instance.load()
 	except Exception as e:
 		raise ConfigError(
-			f"Error instantiating {env_context_class.__name__} from {config_path}: {e}"
+			f"Error instantiating {env_context_class.__name__} from {environment_py_path}: {e}"
 		)
 
 	return env_context_instance

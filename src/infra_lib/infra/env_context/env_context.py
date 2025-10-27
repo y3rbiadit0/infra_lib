@@ -1,10 +1,9 @@
 import abc
 from pathlib import Path
 from typing import Dict, Optional
-
 from dotenv import dotenv_values
 
-from ..infra import InfraEnvironment
+from ...infra.enums import InfraEnvironment
 
 
 class EnvironmentContext(abc.ABC):
@@ -18,23 +17,22 @@ class EnvironmentContext(abc.ABC):
 	    env_vars: A dictionary holding the loaded environment variables.
 	"""
 
-	def __init__(self, config_dir: Path):
+	def __init__(self, project_root: Path, environment_dir: Path):
 		"""Initializes the EnvironmentContext.
 
 		Args:
 		    config_dir: The root directory for configuration files.
 		"""
-		self.config_dir: Path = config_dir
+		self.project_root: Path = project_root
+		self.environment_dir: Path = environment_dir
 		self.env_vars: Dict[str, str] = {}
 		super().__init__()
-
 
 	@abc.abstractmethod
 	def env(self) -> InfraEnvironment:
 		"""The specific environment (e.g., local, staging)."""
 		pass
 
-	
 	def get_dotenv_path(self) -> Path:
 		"""Gets the path to the specific .env file for the subclass.
 
@@ -44,7 +42,7 @@ class EnvironmentContext(abc.ABC):
 		Returns:
 		    A Path object to the .env file.
 		"""
-		return self.config_dir.parent / ".env"
+		return self.environment_dir.parent / ".env"
 
 	def pre_load_action(self):
 		"""A hook for subclasses to run logic before config is loaded.
