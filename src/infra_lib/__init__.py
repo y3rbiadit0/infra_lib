@@ -7,9 +7,9 @@ from .infra import (
 	BaseInfra,
 	ComposeSettings,
 )
-from .enums import InfraEnvironment
+from .infra import InfraEnvironment
 from .utils import run_command
-from .cli import infra_task
+from .cli import infra_operation, EnvironmentContext
 
 __all__ = [
 	"AWSInfraBuilder",
@@ -20,6 +20,7 @@ __all__ = [
 	"BaseInfra",
 	"ComposeSettings",
 	"InfraEnvironment",
+	"EnvironmentContext",
 	"run_command",
-	"infra_task",
+	"infra_operation",
 ]

@@ -4,7 +4,7 @@ from pathlib import Path
 import logging
 from typing import Callable, Dict, List
 
-from ..enums import InfraEnvironment
+from .enums import InfraEnvironment
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

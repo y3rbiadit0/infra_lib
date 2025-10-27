@@ -5,7 +5,7 @@ import logging
 
 from jinja2 import Environment as JinjaEnvironment, FileSystemLoader
 
-from .....enums import InfraEnvironment
+from .....infra.enums import InfraEnvironment
 from ..template_file import TemplateFile, VSCodeGenerator, VSCodeLaunchConfig
 
 logger = logging.getLogger(__name__)

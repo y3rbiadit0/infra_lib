@@ -6,7 +6,7 @@ from .aws_infra import (
 	AWSLambdaArchitecture,
 )
 from .base_infra import BaseInfra, ComposeSettings
-
+from .enums import InfraEnvironment
 
 __all__ = [
 	"AWSInfraBuilder",
@@ -16,4 +16,5 @@ __all__ = [
 	"BaseInfra",
 	"BaseLambdaZipBuilder",
 	"ComposeSettings",
+	"InfraEnvironment",
 ]

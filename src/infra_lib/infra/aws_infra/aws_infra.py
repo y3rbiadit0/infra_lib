@@ -12,7 +12,7 @@ from .sts_util import STSUtil
 from .s3_util import S3Util
 from .secrets_util import SecretsManagerUtil
 from .api_gateway_util import APIGatewayUtil
-from ...enums import InfraEnvironment
+from ..enums import InfraEnvironment
 from ..base_infra import BaseInfra
 
 logger = logging.getLogger(__name__)

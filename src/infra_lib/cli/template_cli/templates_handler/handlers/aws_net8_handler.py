@@ -1,6 +1,6 @@
 from typing import List
 
-from .....enums import InfraEnvironment
+from .....infra.enums import InfraEnvironment
 from .base_template_handler import BaseTemplateHandler
 from .util import NETContextPrompter
 from ..template_file import (

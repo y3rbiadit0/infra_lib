@@ -10,7 +10,7 @@ from mypy_boto3_lambda.literals import RuntimeType
 
 from ..api_gateway_util import APIGatewayUtil
 from ..boto_client_factory import AwsService, BotoClientFactory
-from ....enums import InfraEnvironment
+from ...enums import InfraEnvironment
 from ..creds import CredentialsProvider
 from .lambda_zip_builder import DEFAULT_BUILDER_BY_RUNTIME, BaseLambdaZipBuilder
 from ..sts_util import STSUtil

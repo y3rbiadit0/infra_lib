@@ -3,7 +3,7 @@ from pathlib import Path
 import boto3
 import logging
 
-from ...enums import InfraEnvironment
+from ..enums import InfraEnvironment
 from .creds import CredentialsProvider
 
 
