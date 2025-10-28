@@ -24,8 +24,8 @@ def infra_operation(
 			name=op_name,
 			description=description,
 			handler=func,
-			target_envs=target_envs or [],
-			depends_on=depends_on or [],
+			target_envs=target_envs.copy() if target_envs else [],
+			depends_on=depends_on.copy() if target_envs else [],
 		)
 
 		if op_name in OP_REGISTRY:
