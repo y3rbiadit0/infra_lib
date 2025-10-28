@@ -158,7 +158,7 @@ my_project/
 
 The library is built on three main components:
 
-1. [**`EnvironmentContext`**](src\infra_lib\infra\env_context\env_context.py)
+1. [**`EnvironmentContext`**](src/infra_lib/infra/env_context/env_context.py)
 This is a class you define for each environment. It's responsible for loading configuration (like `.env` files) and making it available to your `operations`.
 
 - It must inherit from `EnvironmentContext` (or a provider-specific one like `AWSEnvironmentContext`).
@@ -183,7 +183,7 @@ class LocalContext(AWSEnvironmentContext):
         return self.get("MY_SERVICE_URL", "http://localhost:8080")
 ```
 
-2. [**`@infra_operation`**](src\infra_lib\cli\runner_cli\infra_op_decorator\decorator.py) Decorator
+2. [**`@infra_operation`**](src/infra_lib/cli/runner_cli/infra_op_decorator/decorator.py) Decorator
 This is how you define a runnable task. You create functions (or class methods) inside any `.py` file in the `infra/operations/` directory.
 
 - `name`: (Optional) The name to use in the CLI. If not provided, it's derived from the function name (e.g., deploy_api -> deploy-api)
@@ -233,7 +233,7 @@ class ApiOperations:
         print(f"Deploying API for {context.env()}")
 ```
 
-3. [**`run`**](src\infra_lib\cli\runner_cli\run_cli.py) Command (DAG Runner)
+3. [**`run`**](src/infra_lib/cli/runner_cli/run_cli.py) Command (DAG Runner)
 When you execute `infra-cli run -op deploy-s3-buckets -e local`:
 1. **Load Context**: The library finds `infra/environments/local/local.py`, finds the `LocalContext` class, and creates an instance.
 2. **Discover Ops**: It searches `infra/operations/` and finds all `@infra_operation` functions, building a registry.
