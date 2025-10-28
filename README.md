@@ -43,21 +43,28 @@ pip install -e .
 ```
 
 ---
+## 🚀 Getting Started
 
-## 🧰 Usage
+Here's the fastest way to get up and running:
 
-The main entrypoint is:
+### 1. 🏗️ Initialize Your Project
+
+First, use the `init` command to create a new project from a template. This sets up your directory structure and all the boilerplate.
 
 ```bash
-infra-cli [COMMAND] [OPTIONS]
+# Example: Create a .NET 8 AWS Lambda project
+infra-cli init --stack net8_lambda --provider aws
 ```
 
-### Commands
+### 2. ▶️ Run Your Infrastructure
+Next, use the run command to execute your infra tasks. You just need to tell it which environment to run (`-e`) and where your infra folder is (--project-root).
+```bash
+# See all operations for the 'local' environment
+infra-cli run -e local --project-root ./infra
 
-| Command | Description |
-|----------|-------------|
-| `init` | Initialize a new infrastructure stack from templates |
-| `run` | Run infrastructure `operation` for a specified `environment`. |
+# Run the 'deploy-api' operation for the 'stage' environment
+infra-cli run -e stage --project-root ./infra -op deploy-api
+```
 ---
 
 ### 1. 🏗️ Initialize a New Template
