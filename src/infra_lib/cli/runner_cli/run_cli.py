@@ -35,11 +35,11 @@ _INSTANCE_CACHE: Dict[Type, Any] = {}
 	help="The root directory of the infrastructure project.",
 )
 @click.option(
-    "-ops",          
-    "--operation",
-    "operations",
-    multiple=True,
-    help="Operation to run. Can be specified multiple times."
+	"-ops",
+	"--operation",
+	"operations",
+	multiple=True,
+	help="Operation to run. Can be specified multiple times.",
 )
 def run_cli(environment: str, project_root: Path, operations: tuple[str]):
 	"""Run infrastructure operations for a specified environment."""
@@ -61,7 +61,7 @@ def run_cli(environment: str, project_root: Path, operations: tuple[str]):
 		logger.info(f"Context loaded for project: {env_context.env()}")
 
 		ops_to_run: List[str]
-	
+
 		if not operations:
 			logger.info("Running all available operations...")
 			ops_to_run = list(OP_REGISTRY.keys())
