@@ -35,7 +35,7 @@ _INSTANCE_CACHE: Dict[Type, Any] = {}
 	help="The root directory of the infrastructure project.",
 )
 @click.option(
-	"-ops",
+	"-op",
 	"--operation",
 	"operations",
 	multiple=True,
@@ -149,7 +149,7 @@ def _execute_op_with_deps(
 			raise OpError(f"Error preparing handler for op '{op_name}': {e}") from e
 		raise e
 
-	if "all" not in op.target_envs and context.env not in op.target_envs:
+	if "all" not in op.target_envs and context.env() not in op.target_envs:
 		logger.info(f"⏭️ Skipping action '{op.name}' (not targeted for env: {context.env})")
 	else:
 		logger.info(f"▶️ Running action: {op.name}")
