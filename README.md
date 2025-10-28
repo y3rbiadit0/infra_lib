@@ -10,10 +10,12 @@ Built for reproducibility, extensibility, and developer productivity.
 
 ## ✨ Features
 
-- 📦 **Template Registry** — Reusable, Jinja2-based IaC boilerplates.
-- ⚙️ **Environment-Aware Runner** — Run infrastructure for `local`, `stage`, or `prod` environments.
-- 🧩 **Extensible Handlers** — Plug in new stacks, templates, and providers easily.
-- 🖥️ **Developer-Friendly** — Local `.env`, Docker, and VSCode support out-of-the-box.
+* 📦 **Project Bootstrapping**: `infra-cli init` scaffolds new projects with environment-aware templates (e.g., `aws`, `net8_lambda`).
+* ⚙️ **Operation Runner**: `infra-cli run` executes infrastructure tasks for specific environments (`local`, `stage`, `prod`).
+* 🔗 **Dependency Management**: Automatically runs operations in the correct order based on `depends_on` declarations (DAG execution).
+* 🔌 **Extensible Operations**: Define custom operations with a simple `@infra_operation` decorator.
+* ☁️ **Cloud Providers**: Includes built-in utilities for AWS (S3, Lambda, SQS, etc.) via `AWSInfraProvider`.
+* 🐳 **Local Development**: Helpers for Docker Compose (`DockerCompose` class) to integrate with local setups.
 
 ---
 
@@ -55,9 +57,7 @@ infra-cli [COMMAND] [OPTIONS]
 | Command | Description |
 |----------|-------------|
 | `init` | Initialize a new infrastructure stack from templates |
-| `run` | Build and run local or staging infrastructure |
-| `deploy` | Execute a specific infrastructure task (e.g., setup, teardown) |
-
+| `run` | Run infrastructure `operation` for a specified `environment`. |
 ---
 
 ### 1. 🏗️ Initialize a New Template
@@ -74,19 +74,42 @@ infra-cli init --stack net8_lambda --provider aws
 
 ---
 
-### 2. ▶️ Run Infrastructure
+### 2. ▶️ Run Operations
 
-Build and run a local or staging environment:
+This command discovers and executes your defined infrastructure operations.
 
+
+#### 2.1 List Available Operations 
 ```bash
-infra-cli run --project MyProject -e local
+infra-cli run -e local --project-root ./my-project/infra
+
+# Example output
+No specific operation selected. Available operations:
+   - setup-localstack
+   - deploy-s3-buckets
+   - deploy-lambdas
+   - run-migrations
 ```
 
-**What this does:**
-- Spins up Docker Compose services for the given project.
-- Runs pre/post compose actions.
-- Executes environment-specific _`setup`_ tasks (like seeding data or configuring mock services).
+#### 2.2 Run a Specific Operation
 
+```bash
+infra-cli run -e stage --project-root ./my-project -op deploy-api
+```
+
+What this does:
+
+- Loads the `EnvironmentContext` from `my-project/infra/environments/stage/stage.py`.
+- Discovers all `@infra_operation` functions in `my-project/infra/operations/`.
+- Finds the `deploy-api` operation.
+- Checks its depends_on list (e.g., ["deploy-s3-buckets"]).
+- Runs `deploy-s3-buckets` first, then `deploy-api`.
+
+#### 2.3 Run Multiple Operations
+You can specify -op multiple times. Each operation and its dependency tree will be executed.
+```bash
+infra-cli run -e prod -op deploy-api -op run-migrations
+```
 ---
 
 ### 3. ⚙️ Deploy Specific Tasks
@@ -107,109 +130,123 @@ infra-cli deploy -e prod
 
 ## 🧩 Example Project Structure
 
-When you initialize a new project via `infra-cli init`, it creates a structure like this:
+When you initialize a new project via `infra-cli init`, the structure should look like this. The run command automatically discovers files in `environments` and `operations`.
 
 ```
-infrastructure/
-├── local/               # Local development environment
-│   ├── .env
-│   ├── Dockerfile.debug
-│   └── infra_local.py   # Defines local infrastructure
-│
-├── stage/               # Staging environment
-│   ├── .env
-│   └── infra_stage.py
-│
-├── prod/                # Production environment
-│   ├── .env
-│   └── infra_prod.py
-│
-├── docker-compose.yml   # Top-level Docker Compose configuration
-└── __init__.py
+my_project/
+└── infra/
+   ├── environments/
+   │   ├── local/
+   │   │   ├── .env           # Vars for local
+   │   │   └── local.py       # Defines LocalContext(EnvironmentContext)
+   │   ├── stage/
+   │   │   ├── .env
+   │   │   └── stage.py       # Defines StageContext(EnvironmentContext)
+   │   └── prod/
+   │      ├── .env
+   │      └── prod.py
+   │
+   └── operations/
+      ├── __init__.py
+      ├── aws_infra.py   # Defines operations (e.g., deploy-s3)
+      └── db_ops.py      # Defines operations (e.g., run-migrations)
 ```
 
 ---
 
-## 🧠 How It Works
+## 🧠 Core Concepts
 
-`infra-lib` operates in two layers:
+The library is built on three main components:
 
-1. **Environment Layer (`BaseInfra`)**  
-   - Defines environment-specific logic for `local`, `stage`, or `prod`.
-   - Uses a `ComposeSettings` class to configure Docker profiles and actions.
+1. `EnvironmentContext`
+This is a class you define for each environment. It's responsible for loading configuration (like `.env` files) and making it available to your `operations`.
 
-2. **Task Layer (`@infra_task`)**  
-   - Registers methods as runnable CLI tasks.
-   - Task names are derived automatically (`deploy_app` → `deploy-app`).
+- It must inherit from `EnvironmentContext` (or a provider-specific one like `AWSEnvironmentContext`).
+- The file must be named `<env>.py` (e.g., `local.py`).
+- The `run` command finds this class, instantiates it, and injects it into any operation that needs it.
 
-**Example:**
-
+Example: `infra/environments/local/local.py`
 ```python
-from infra_lib.core.task import infra_task
-from infra_lib.enums import InfraEnvironment
-from infra_lib.infra.base_infra import BaseInfra
+from infra_lib.infra import InfraEnvironment
+from infra_lib.infra.env_context.aws_env_context import AWSEnvironmentContext
 
-class LocalInfra(BaseInfra):
-    @infra_task
-    def setup(cls):
-        print("Setting up local infrastructure...")
-
-    @infra_task
-    def teardown(cls):
-        print("Cleaning up...")
+# The class name doesn't matter, but the file name does.
+class LocalContext(AWSEnvironmentContext):
+    """My project's local environment configuration."""
+    
+    def env(self) -> InfraEnvironment:
+        # This tells the library which environment this context is for.
+        return InfraEnvironment.local
+    
+    # You can add custom methods
+    def get_my_service_url(self) -> str:
+        return self.get("MY_SERVICE_URL", "http://localhost:8080")
 ```
 
-Running:
-```bash
-infra-cli deploy -t setup -e local
-```
+2. `@infra_operation` Decorator
+This is how you define a runnable task. You create functions (or class methods) inside any `.py` file in the `infra/operations/` directory.
 
-Will automatically find and execute `LocalInfra.setup`.
+- `name`: (Optional) The name to use in the CLI. If not provided, it's derived from the function name (e.g., deploy_api -> deploy-api)
+- `description`: A helpful description.
+- `depends_on`: A list of other operation names that must run first.
+- `target_envs`: (Optional) A list of `InfraEnvironment` enums. The operation will only run if the target environment matches.
 
----
-
-## 🧱 Core Concepts
-
-### 🔹 `infra_task` Decorator
-
-Registers a method as a runnable CLI task.
-
+Example: `infra/operations/aws_ops.py`
 ```python
-@infra_task
-def setup(cls):
-    ...
+
+#### Example 1: Operation as functions
+from infra_lib.cli.infra_op_decorator import infra_operation
+from infra_lib.infra.providers.aws_infra import AWSInfraProvider
+from ..environments.local.local import LocalContext # Your custom context
+
+@infra_operation(
+    description="Deploys the main S3 buckets",
+    depends_on=["setup-iam-roles"] # Ensures 'setup-iam-roles' runs first
+)
+def deploy-s3-buckets(context: LocalContext):
+    # 'context' is automatically injected by the runner
+    print(f"Deploying S3 buckets for {context.env()}")
+    
+    # Use built-in providers
+    aws = AWSInfraProvider(context)
+    aws.s3_util.create_bucket(...)
+    print(f"Service URL: {context.get_my_service_url()}")
+
+@infra_operation(description="Sets up base IAM roles")
+def setup-iam-roles(context: LocalContext):
+    print("Setting up IAM...")
+
+
+#### Example 2: Operation as methods
+from infra_lib.cli.infra_op_decorator import infra_operation
+from infra_lib.infra.env_context import EnvironmentContext
+
+class ApiOperations:
+    
+    def __init__(self):
+        # A parameterless __init__ is required
+        print("Initializing ApiOperations class...")
+
+    @infra_operation(description="Deploys the main API")
+    def deploy-api(self, context: EnvironmentContext):
+        # Both 'self' and 'context' are injected
+        print(f"Deploying API for {context.env()}")
 ```
 
-Tasks are auto-discovered via the `TASK_REGISTRY`.
-
-### 🔹 Environment Builders
-
-`EnvBuilder` automates:
-- Running Docker Compose (build, up, down)
-- Executing pre/post actions
-- Running `setup` tasks for local environments
-
+3. `run` Command (DAG Runner)
+When you execute `infra-cli run -op deploy-s3-buckets -e local`:
+1. **Load Context**: The library finds `infra/environments/local/local.py`, finds the `LocalContext` class, and creates an instance.
+2. **Discover Ops**: It searches `infra/operations/` and finds all `@infra_operation` functions, building a registry.
+3. **Build Graph**: It finds the `deploy-s3-buckets` _`operation`_ and sees it _`depends_on`_ `setup-iam-roles`.
+4. **Execute**: It runs the operations in the correct order (a Directed Acyclic Graph, or DAG):
+    - `setup-iam-roles(context=LocalContext_instance)`
+    - `deploy-s3-buckets(context=LocalContext_instance)`
 ---
+## 🧰 Built-in Utilities
+Your operations can use helpers included with `infra_lib`:
+- `AWSInfraProvider`: Provides pre-configured utility clients for S3, Lambda, SQS, EventBridge, Secrets Manager, etc.
+- `DockerCompose`: A helper class to build, up, and down Docker Compose files, perfect for local operations.
 
-## 🧭 Command Flow
-
-```
-infra-cli run
- ├──> EnvBuilder.execute()
-      ├──> pre_compose_actions
-      ├──> docker compose up
-      ├──> post_compose_actions
-      └──> local setup task
-```
-
-```
-infra-cli deploy
- ├──> Load BaseInfra (by environment)
- ├──> Discover registered @infra_task
- └──> Execute requested task
-```
-
----
 
 ## 📚 Example Project
 
