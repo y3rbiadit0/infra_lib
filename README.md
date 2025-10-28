@@ -234,13 +234,13 @@ class ApiOperations:
 ```
 
 3. [**`run`**](src/infra_lib/cli/runner_cli/run_cli.py) Command (DAG Runner)
-When you execute `infra-cli run -op deploy-s3-buckets -e local`:
-1. **Load Context**: The library finds `infra/environments/local/local.py`, finds the `LocalContext` class, and creates an instance.
-2. **Discover Ops**: It searches `infra/operations/` and finds all `@infra_operation` functions, building a registry.
-3. **Build Graph**: It finds the `deploy-s3-buckets` _`operation`_ and sees it _`depends_on`_ `setup-iam-roles`.
-4. **Execute**: It runs the operations in the correct order (a Directed Acyclic Graph, or DAG):
-    - `setup-iam-roles(context=LocalContext_instance)`
-    - `deploy-s3-buckets(context=LocalContext_instance)`
+    When you execute `infra-cli run -op deploy-s3-buckets -e local`:
+    1. **Load Context**: The library finds `infra/environments/local/local.py`, finds the `LocalContext` class, and creates an instance.
+    2. **Discover Ops**: It searches `infra/operations/` and finds all `@infra_operation` functions, building a registry.
+    3. **Build Graph**: It finds the `deploy-s3-buckets` _`operation`_ and sees it _`depends_on`_ `setup-iam-roles`.
+    4. **Execute**: It runs the operations in the correct order (a Directed Acyclic Graph, or DAG):
+        - `setup-iam-roles(context=LocalContext_instance)`
+        - `deploy-s3-buckets(context=LocalContext_instance)`
 ---
 ## 🧰 Built-in Utilities
 Your operations can use helpers included with `infra_lib`:
