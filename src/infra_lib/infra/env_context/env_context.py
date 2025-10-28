@@ -53,7 +53,7 @@ class EnvironmentContext(abc.ABC):
 		"""
 		pass
 
-	def load(self):
+	def load(self, extra_vars: Optional[Dict[str, str]] = None):
 		"""Loads configuration into the self.env_vars dictionary.
 
 		This method is the main entry point for loading configuration.
@@ -69,6 +69,10 @@ class EnvironmentContext(abc.ABC):
 			loaded_vars.update(dotenv_vars)
 
 		loaded_vars["TARGET_ENV"] = self.env().value
+
+		if extra_vars:
+			loaded_vars.update(extra_vars)
+
 		self.env_vars = loaded_vars
 		os.environ.update(loaded_vars)
 
