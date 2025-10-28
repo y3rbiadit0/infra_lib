@@ -10,7 +10,7 @@ OP_REGISTRY: Dict[str, InfraOp] = {}
 
 def infra_operation(
 	description: str,
-	name: str | Callable[[str], str]  = None,
+	name: str | Callable[[str], str] = None,
 	target_envs: list[InfraEnvironment] = None,
 	depends_on: list[str] = None,
 ):
