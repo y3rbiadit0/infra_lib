@@ -5,10 +5,9 @@ from .infra import (
 	BaseLambdaZipBuilder,
 	AWSQueueConfig,
 	BaseInfraProvider,
-	ComposeSettings,
 )
 from .infra import InfraEnvironment, EnvironmentContext, AWSEnvironmentContext
-from .utils import run_command
+from .utils import run_command, DockerCompose, ComposeSettings
 from .cli import infra_operation
 
 __all__ = [
@@ -24,4 +23,5 @@ __all__ = [
 	"AWSEnvironmentContext",
 	"run_command",
 	"infra_operation",
+	"DockerCompose",
 ]

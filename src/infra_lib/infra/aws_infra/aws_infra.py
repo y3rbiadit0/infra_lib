@@ -46,7 +46,6 @@ class AWSInfraProvider(BaseInfraProvider):
 	secrets_util: SecretsManagerUtil
 	api_gateway_util: APIGatewayUtil
 	sts_util: STSUtil
-	env_vars: Dict[str, str]
 
 	def __init__(self, env_context: AWSEnvironmentContext):
 		super().__init__(env_context=env_context)
@@ -71,7 +70,7 @@ class AWSInfraProvider(BaseInfraProvider):
 			creds=self.creds,
 			environment=env_context.env(),
 			config_dir=env_context.aws_config_dir(),
-			project_root=env_context.project_root(),
+			project_root=env_context.project_root,
 			client_factory=self._client_factory,
 		)
 		self.eventbridge_util = EventBridgeUtil(

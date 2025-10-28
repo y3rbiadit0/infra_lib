@@ -1,10 +1,30 @@
+from dataclasses import InitVar, dataclass, field
 import logging
-from typing import Dict
+from typing import Callable, Dict, List
 from pathlib import Path
-from ..infra.base_infra import ComposeSettings
+
+from ..infra.enums import InfraEnvironment
 from .command_utils import run_command
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class ComposeSettings:
+	environment: InfraEnvironment
+	custom_profiles: InitVar[List[str]]
+
+	compose_name: str = "infra"
+	pre_compose_actions: List[Callable[[], None]] = None
+	post_compose_actions: List[Callable[[], None]] = None
+	_custom_profiles: List[str] = field(init=False, default_factory=list)
+
+	def __post_init__(self, custom_profiles: List[str]):
+		self._custom_profiles = custom_profiles
+
+	@property
+	def profiles(self) -> List[str]:
+		return [self.environment.value, *self._custom_profiles]
 
 
 class DockerCompose:
@@ -34,6 +54,14 @@ class DockerCompose:
 
 	def down(self, remove_volumes: bool = True):
 		logger.info("🛑 Stopping containers...")
+		profiles = " ".join(f"--profile {p}" for p in self.settings.profiles)
+
+		run_command(
+			cmd=f"docker compose -p {self.settings.compose_name} {profiles} "
+			f"-f {self.compose_file} down",
+			env_vars=self.env_vars,
+		)
+
 		self._run_compose_command(f"down {'-v' if remove_volumes else ''}")
 
 	def build(self):

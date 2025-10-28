@@ -34,7 +34,13 @@ _INSTANCE_CACHE: Dict[Type, Any] = {}
 	show_default=True,
 	help="The root directory of the infrastructure project.",
 )
-@click.argument("operations", nargs=-1)
+@click.option(
+    "-ops",          
+    "--operation",
+    "operations",
+    multiple=True,
+    help="Operation to run. Can be specified multiple times."
+)
 def run_cli(environment: str, project_root: Path, operations: tuple[str]):
 	"""Run infrastructure operations for a specified environment."""
 	env = InfraEnvironment(environment)
@@ -52,12 +58,13 @@ def run_cli(environment: str, project_root: Path, operations: tuple[str]):
 
 		logger.info(f"Loading configuration for '{env}'...")
 		env_context = load_env_context_from_arg(env, project_root)
-		logger.info(f"Context loaded for project: {env_context.env}")
+		logger.info(f"Context loaded for project: {env_context.env()}")
 
 		ops_to_run: List[str]
+	
 		if not operations:
 			logger.info("Running all available operations...")
-			ops_to_run = list(OP_REGISTRY.ikeys())
+			ops_to_run = list(OP_REGISTRY.keys())
 		else:
 			logger.info(f"Running specified operations: {', '.join(operations)}")
 			ops_to_run = list(operations)

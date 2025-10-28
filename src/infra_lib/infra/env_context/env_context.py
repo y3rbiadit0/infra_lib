@@ -1,4 +1,5 @@
 import abc
+import os
 from pathlib import Path
 from typing import Dict, Optional
 from dotenv import dotenv_values
@@ -42,7 +43,7 @@ class EnvironmentContext(abc.ABC):
 		Returns:
 		    A Path object to the .env file.
 		"""
-		return self.environment_dir.parent / ".env"
+		return self.environment_dir.parent / self.env().value / ".env"
 
 	def pre_load_action(self):
 		"""A hook for subclasses to run logic before config is loaded.
@@ -61,14 +62,15 @@ class EnvironmentContext(abc.ABC):
 		"""
 		self.pre_load_action()
 		dotenv_path = self.get_dotenv_path()
+		loaded_vars = os.environ.copy()
 
-		if not dotenv_path.exists():
-			loaded_vars = {}
-		else:
-			loaded_vars = dotenv_values(dotenv_path=dotenv_path)
+		if dotenv_path.exists():
+			dotenv_vars = dotenv_values(dotenv_path)
+			loaded_vars.update(dotenv_vars)
 
 		loaded_vars["TARGET_ENV"] = self.env().value
 		self.env_vars = loaded_vars
+		os.environ.update(loaded_vars)
 
 	def get(self, key: str, default: Optional[str] = None) -> Optional[str]:
 		"""Safe getter for accessing configuration values.

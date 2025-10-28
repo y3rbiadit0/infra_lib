@@ -5,7 +5,7 @@ from .aws_infra import (
 	BaseLambdaZipBuilder,
 	AWSLambdaArchitecture,
 )
-from .base_infra import BaseInfraProvider, ComposeSettings
+from .base_infra import BaseInfraProvider
 from .enums import InfraEnvironment
 from .env_context import EnvironmentContext, AWSEnvironmentContext
 
