@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from typing import Dict
 
 
@@ -9,7 +10,7 @@ OP_REGISTRY: Dict[str, InfraOp] = {}
 
 def infra_operation(
 	description: str,
-	name: str = None,
+	name: str | Callable[[str], str]  = None,
 	target_envs: list[InfraEnvironment] = None,
 	depends_on: list[str] = None,
 ):
@@ -18,7 +19,7 @@ def infra_operation(
 	"""
 
 	def decorator(func: OpHandler):
-		op_name = name if name else func.__name__.replace("_", "-")
+		op_name = _handle_name(name, func)
 		infra_op = InfraOp(
 			name=op_name,
 			description=description,
@@ -35,3 +36,15 @@ def infra_operation(
 		return func
 
 	return decorator
+
+
+def _handle_name(name: str, func: Callable):
+	func_name = func.__name__.replace("_", "-")
+
+	if name is None:
+		op_name = func_name
+	elif callable(name):
+		op_name = name(func_name)
+	else:
+		op_name = name
+	return op_name
