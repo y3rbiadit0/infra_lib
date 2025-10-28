@@ -63,8 +63,13 @@ def run_cli(environment: str, project_root: Path, operations: tuple[str]):
 		ops_to_run: List[str]
 
 		if not operations:
-			logger.info("Running all available operations...")
-			ops_to_run = list(OP_REGISTRY.keys())
+			ops_to_run = [op_name for op_name, op in OP_REGISTRY.items() if env in op.target_envs]
+			click.echo(
+				click.style("No specific operation selected. Available operations:", fg="yellow")
+			)
+			for op_name in ops_to_run:
+				click.echo(click.style(f"  - {op_name}", fg="green"))
+			return
 		else:
 			logger.info(f"Running specified operations: {', '.join(operations)}")
 			ops_to_run = list(operations)
