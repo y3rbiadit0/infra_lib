@@ -6,7 +6,7 @@ from pathlib import Path
 
 from infra_lib.infra.aws_infra.boto_client_factory import BotoClientFactory
 from infra_lib.infra.aws_infra.secrets_util import SecretsManagerUtil
-
+from .aws_fixtures import fake_creds
 
 @pytest.fixture
 def mock_client_factory() -> Tuple[MagicMock, MagicMock]:
