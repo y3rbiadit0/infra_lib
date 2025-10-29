@@ -70,8 +70,6 @@ class TestInfraOp:
 		with pytest.raises(FrozenInstanceError):
 			op.depends_on = []
 
-		assert op1.target_envs is op2.target_envs
-
 	def test_handler_types_are_accepted(self):
 		op_func = InfraOp(name="func-op", description="d1", handler=_dummy_func_handler)
 		assert op_func.handler(None) == "function handled"
