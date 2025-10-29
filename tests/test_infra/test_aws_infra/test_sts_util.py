@@ -1,7 +1,7 @@
 import pytest
 from infra_lib.infra.aws_infra.sts_util import STSUtil
 
-from .aws_fixtures import fake_creds, mock_client_factory
+from ...fixtures import fake_creds, mock_client_factory
 
 
 @pytest.fixture

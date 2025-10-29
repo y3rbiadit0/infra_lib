@@ -1,18 +1,19 @@
-import infra_lib
 import pytest
 from unittest.mock import MagicMock, patch, mock_open
 from pathlib import Path
-from dataclasses import dataclass, field
-from typing import Dict, List, Any
+from typing import Dict
 
-from infra_lib.infra.aws_infra.lambda_util.lambda_util import LambdaUtil
-from infra_lib.infra.aws_infra.lambda_util.arch_enum import AWSLambdaArchitecture
-from infra_lib.infra.aws_infra.lambda_util.lambda_zip_builder import BaseLambdaZipBuilder
-from infra_lib.infra.aws_infra.creds import CredentialsProvider
+from infra_lib.infra.aws_infra.lambda_util import (
+	LambdaUtil,
+	AWSLambdaArchitecture,
+	BaseLambdaZipBuilder,
+	AWSLambdaParameters,
+)
+import infra_lib
+from infra_lib.infra.aws_infra import CredentialsProvider, BotoClientFactory
 from infra_lib.infra.enums import InfraEnvironment
-from infra_lib.infra.aws_infra.boto_client_factory import BotoClientFactory, AwsService
-from infra_lib.infra.aws_infra.lambda_util.lambda_util import AWSLambdaParameters
-from ..aws_fixtures import fake_creds
+
+from ....fixtures.aws_fixtures import fake_creds
 
 
 class MockLambdaClient:

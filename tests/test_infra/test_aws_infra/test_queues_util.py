@@ -1,13 +1,9 @@
 import pytest
 from unittest.mock import MagicMock, patch
-from dataclasses import dataclass, field
-from typing import List
+from dataclasses import dataclass
 
-from infra_lib.infra.aws_infra.queues_util import QueuesUtil, AWSQueueConfig
-from infra_lib.infra.aws_infra.creds import CredentialsProvider
-from infra_lib.infra.aws_infra.boto_client_factory import BotoClientFactory
-from infra_lib.infra.aws_infra.aws_services_enum import AwsService
-from .aws_fixtures import fake_creds
+from infra_lib.infra.aws_infra import QueuesUtil, AWSQueueConfig, BotoClientFactory, AwsService
+from ...fixtures import fake_creds
 
 
 @dataclass

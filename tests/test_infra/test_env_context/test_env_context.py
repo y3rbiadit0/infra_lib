@@ -2,7 +2,6 @@ import os
 import pytest
 from pathlib import Path
 from unittest.mock import patch, MagicMock
-from typing import Dict
 
 from infra_lib import EnvironmentContext, InfraEnvironment
 from ...fixtures import target_env_var_fixture

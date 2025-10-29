@@ -1,9 +1,7 @@
-from infra_lib.infra.aws_infra.creds import CredentialsProvider
 import pytest
 from unittest.mock import patch
-import os
-from dataclasses import dataclass
 
+from infra_lib.infra.aws_infra import CredentialsProvider
 
 localstack_creds_fixture = {
 	"AWS_ACCESS_KEY_ID": "test_key",

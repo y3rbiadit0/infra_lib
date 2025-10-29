@@ -1,10 +1,9 @@
-from infra_lib.infra.aws_infra.aws_services_enum import AwsService
 import pytest
 from unittest.mock import MagicMock, patch
 
-from infra_lib.infra.aws_infra.creds import CredentialsProvider
-from infra_lib.infra.aws_infra.boto_client_factory import BotoClientFactory
-from .aws_fixtures import fake_creds
+from infra_lib.infra.aws_infra import CredentialsProvider, BotoClientFactory, AwsService
+
+from ...fixtures import fake_creds
 
 
 @pytest.fixture

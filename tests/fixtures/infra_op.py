@@ -1,6 +1,7 @@
 from typing import Callable, List
-from infra_lib.cli.runner_cli.infra_op_decorator.infra_op import InfraOp
+
 from infra_lib import InfraEnvironment
+from infra_lib.cli.runner_cli.infra_op_decorator.infra_op import InfraOp
 
 
 def infra_op_factory(

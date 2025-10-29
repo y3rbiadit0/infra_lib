@@ -1,20 +1,15 @@
-from typing import Tuple
 import pytest
+from pathlib import Path
+from typing import Tuple
 from unittest.mock import MagicMock, patch
 import json
-from pathlib import Path
 
-from infra_lib.infra.aws_infra.boto_client_factory import BotoClientFactory
-from infra_lib.infra.aws_infra.secrets_util import SecretsManagerUtil
-from .aws_fixtures import fake_creds
+from infra_lib.infra.aws_infra import BotoClientFactory, SecretsManagerUtil
+from ...fixtures import fake_creds
 
 
 @pytest.fixture
 def mock_client_factory() -> Tuple[MagicMock, MagicMock]:
-	"""
-	Provides a mock BotoClientFactory and the mock SecretsManagerClient
-	it is configured to return.
-	"""
 	factory = MagicMock(spec=BotoClientFactory)
 
 	mock_secrets_client = MagicMock(spec=MockSecretsManagerClient)
