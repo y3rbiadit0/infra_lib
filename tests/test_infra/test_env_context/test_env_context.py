@@ -7,6 +7,7 @@ from typing import Dict
 from infra_lib import EnvironmentContext, InfraEnvironment
 from ...fixtures import target_env_var_fixture
 
+
 class ConcreteEnvironmentContext(EnvironmentContext):
 	def __init__(self, project_root: Path, environment_dir: Path, env_type: InfraEnvironment):
 		super().__init__(project_root, environment_dir)
@@ -145,13 +146,11 @@ class TestEnvironmentContextPreLoadAction:
 
 
 class TestEnvironmentContextLoadBasics:
-
-
 	def test_should_update_os_environ_during_load(self, context, mock_environ):
 		expected_env_vars = {"other_env": "other_value"}
 		os.environ.update(expected_env_vars)
 		assert target_env_var_fixture() not in os.environ
-		
+
 		context.load()
 		assert target_env_var_fixture() in os.environ
 
@@ -177,9 +176,7 @@ class TestEnvironmentContextLoadWithDotenv:
 		assert target_env_var_fixture() in context.env_vars
 		assert context.env_vars[target_env_var_fixture()] == mock_infra_env.value
 
-	def test_should_handle_malformed_dotenv_entries(
-		self, context, dotenv_path, mock_environ
-	):
+	def test_should_handle_malformed_dotenv_entries(self, context, dotenv_path, mock_environ):
 		dotenv_path.write_text(
 			"VALID_VAR=valid\nINVALID LINE WITHOUT EQUALS\nANOTHER_VALID=value\n"
 		)
@@ -203,7 +200,6 @@ class TestEnvironmentContextLoadWithDotenv:
 
 
 class TestEnvironmentContextLoadWithExtraVars:
-
 	def test_should_merge_extra_vars_with_loaded_config(
 		self, context, mock_infra_env, mock_environ
 	):
@@ -236,7 +232,6 @@ class TestEnvironmentContextLoadWithExtraVars:
 
 
 class TestEnvironmentContextLoadPrecedence:
-
 	def test_should_respect_precedence_order_extra_over_dotenv_over_os(
 		self, context, dotenv_path, mock_environ
 	):
@@ -263,10 +258,7 @@ class TestEnvironmentContextLoadPrecedence:
 
 
 class TestEnvironmentContextMultipleLoads:
-
-	def test_should_update_env_vars_on_subsequent_loads(
-		self, context, dotenv_path, mock_environ
-	):
+	def test_should_update_env_vars_on_subsequent_loads(self, context, dotenv_path, mock_environ):
 		dotenv_path.write_text("VAR1=value1\n")
 		context.load()
 		assert context.env_vars.get("VAR1") == "value1"
@@ -276,9 +268,7 @@ class TestEnvironmentContextMultipleLoads:
 		assert context.env_vars.get("VAR1") == "updated_value"
 		assert context.env_vars.get("VAR2") == "value2"
 
-	def test_should_call_pre_load_action_on_each_load(
-		self, trackable_context, mock_environ
-	):
+	def test_should_call_pre_load_action_on_each_load(self, trackable_context, mock_environ):
 		trackable_context.load()
 		trackable_context.load()
 		trackable_context.load()
