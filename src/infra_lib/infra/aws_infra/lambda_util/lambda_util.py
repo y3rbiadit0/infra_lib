@@ -122,7 +122,7 @@ class LambdaUtil:
 
 			if not default_lambda_builder_cls:
 				raise NotImplementedError(
-					f"`custom_lambda_builder` not provided and Default Build runner for runtime '{lambda_params.runtime}' not implemented. Must provide a `custom_lambda_builder` or correct the runtime {runtime}"
+					f"`custom_lambda_builder` not provided and Default Build runner for runtime '{lambda_params.runtime}' not implemented. Must provide a `custom_lambda_builder` or correct the runtime {lambda_params.runtime}"
 				)
 			lambda_builder = default_lambda_builder_cls()
 
