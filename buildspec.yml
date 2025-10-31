@@ -7,10 +7,8 @@ env:
 phases:
   install:
     commands:
-      - echo "Installing uv..."
       - curl -LsSf https://astral.sh/uv/install.sh | sh
-      - source "$HOME/.cargo/env"
-      
+      - export PATH="$HOME/.local/bin:$PATH"
       - echo "Setting up Python $PYTHON_VERSION using uv..."
       - uv python install $PYTHON_VERSION
 
