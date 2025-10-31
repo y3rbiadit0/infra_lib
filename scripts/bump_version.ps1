@@ -1,5 +1,9 @@
-$pyprojectPath = "pyproject.toml"
-$versionFilePath = "src/infra_lib/cli/__version__.py"
+param (
+    [string]$pyprojectPath = "pyproject.toml",
+    [string]$versionFilePath = "src/infra_lib/cli/__version__.py",
+    [ValidateSet("major", "minor", "patch")]
+    [string]$versionType = "patch"
+)
 
 function Get-CurrentVersion {
     param (
@@ -23,9 +27,26 @@ function Increment-Version {
     param (
         [int]$Major,
         [int]$Minor,
-        [int]$Patch
+        [int]$Patch,
+        [ValidateSet("major", "minor", "patch")]
+        [string]$VersionType
     )
-    $Patch++
+
+    switch ($VersionType) {
+        "major" {
+            $Major++
+            $Minor = 0
+            $Patch = 0
+        }
+        "minor" {
+            $Minor++
+            $Patch = 0
+        }
+        "patch" {
+            $Patch++
+        }
+    }
+
     return "$Major.$Minor.$Patch"
 }
 
@@ -37,22 +58,20 @@ function Update-VersionFiles {
         [string]$PyprojectContent
     )
 
-    # Update pyproject.toml
     $newContent = $PyprojectContent -replace 'version\s*=\s*"\d+\.\d+\.\d+"', "version = `"$NewVersion`""
     Set-Content $PyprojectPath $newContent
-    Write-Host "Updated $PyprojectPath to $NewVersion"
+    Write-Host "✅ Updated $PyprojectPath to $NewVersion"
 
-    # Update __version__.py
     if (Test-Path $VersionFilePath) {
         Set-Content $VersionFilePath "__version__ = `"$NewVersion`""
-        Write-Host "Updated $VersionFilePath to $NewVersion"
+        Write-Host "✅ Updated $VersionFilePath to $NewVersion"
     } else {
-        Write-Warning "$VersionFilePath not found. Skipping."
+        Write-Warning "⚠️ $VersionFilePath not found. Skipping."
     }
 }
 
 function Format-Code {
-    Write-Host "Running ruff to format code..."
+    Write-Host "🧹 Running ruff to format code..."
     ruff format .
 }
 
@@ -65,14 +84,13 @@ function Apply-Changes {
     git add $FilesToCommit
     git commit -m "New Release v$NewVersion"
     git tag "v$NewVersion"
-    Write-Host "Committed and tagged version v$NewVersion."
+    Write-Host "✅ Committed and tagged version v$NewVersion."
 }
-
 
 try {
     $currentVersion = Get-CurrentVersion -PyprojectPath $pyprojectPath
-    $newVersion = Increment-Version -Major $currentVersion.Major -Minor $currentVersion.Minor -Patch $currentVersion.Patch
-    Write-Host "Bumping version to $newVersion"
+    $newVersion = Increment-Version -Major $currentVersion.Major -Minor $currentVersion.Minor -Patch $currentVersion.Patch -VersionType $versionType
+    Write-Host "Bumping $versionType version → $newVersion"
 
     Update-VersionFiles -NewVersion $newVersion -PyprojectPath $pyprojectPath -VersionFilePath $versionFilePath -PyprojectContent $currentVersion.RawContent
     Format-Code
