@@ -116,7 +116,12 @@ def _execute_op_with_deps(
 	handler = op.handler
 
 	try:
-		is_method = inspect.isfunction(handler) and "." in handler.__qualname__
+		is_lambda_or_nested_fn = "<locals>" in handler.__qualname__
+		is_method = (
+			inspect.isfunction(handler)
+			and not is_lambda_or_nested_fn
+			and "." in handler.__qualname__
+		)
 
 		if is_method:
 			module_name = handler.__module__
