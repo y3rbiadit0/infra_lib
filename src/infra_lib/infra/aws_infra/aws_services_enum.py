@@ -1,4 +1,4 @@
-from enum import StrEnum
+from ..enums import StrEnum
 
 
 class AwsService(StrEnum):
