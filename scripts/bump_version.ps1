@@ -91,12 +91,12 @@ try {
     $currentVersion = Get-CurrentVersion -PyprojectPath $pyprojectPath
     $newVersion = Increment-Version -Major $currentVersion.Major -Minor $currentVersion.Minor -Patch $currentVersion.Patch -VersionType $versionType
     Write-Host "Bumping $versionType version → $newVersion"
-
+    
     Update-VersionFiles -NewVersion $newVersion -PyprojectPath $pyprojectPath -VersionFilePath $versionFilePath -PyprojectContent $currentVersion.RawContent
-    Format-Code
-
+    
     $confirmation = Read-Host "Are you sure you want to commit and tag version $newVersion? (y/n)"
     if ($confirmation -eq "y") {
+        Format-Code
         Apply-Changes -NewVersion $newVersion -FilesToCommit @($pyprojectPath, $versionFilePath)
     } else {
         Write-Host "Operation cancelled."
