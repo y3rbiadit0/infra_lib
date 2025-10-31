@@ -1,3 +1,5 @@
+from unittest.mock import Mock
+from infra_lib.infra.env_context.env_context import EnvironmentContext
 import pytest
 from infra_lib.infra.enums import InfraEnvironment
 from infra_lib.cli.runner_cli.infra_op_decorator.decorator import infra_operation, OP_REGISTRY
@@ -18,8 +20,15 @@ def _decorator_name_builder(name: str):
 	return name.replace("_", "-")
 
 
+@pytest.fixture
+def mock_context():
+	context = Mock(spec=EnvironmentContext)
+	context.env.return_value = InfraEnvironment.local
+	return context
+
+
 class TestInfraOperationNaming:
-	def test_decorator_registration_basic(self):
+	def test_decorator_registration_basic(self, mock_context):
 		expected_op = infra_op_factory(
 			name=_decorator_name_builder("my_test_operation"),
 			description="A test op",
@@ -35,7 +44,7 @@ class TestInfraOperationNaming:
 		decorated_func = decorator(expected_op.handler)
 
 		assert expected_op.name in OP_REGISTRY
-		assert decorated_func() == "executed"
+		assert decorated_func(mock_context) == "executed"
 		assert_op_equal(
 			OP_REGISTRY[expected_op.name.replace("_", "-")],
 			expected_op,

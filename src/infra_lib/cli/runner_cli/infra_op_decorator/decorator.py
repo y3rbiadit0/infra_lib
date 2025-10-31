@@ -9,7 +9,7 @@ OP_REGISTRY: Dict[str, InfraOp] = {}
 
 
 def infra_operation(
-	description: str,
+	description: str = "",
 	name: str | Callable[[str], str] = None,
 	target_envs: list[InfraEnvironment] = None,
 	depends_on: list[str] = None,
@@ -25,7 +25,7 @@ def infra_operation(
 			description=description,
 			handler=func,
 			target_envs=target_envs.copy() if target_envs else [],
-			depends_on=depends_on.copy() if target_envs else [],
+			depends_on=depends_on.copy() if depends_on else [],
 		)
 
 		if op_name in OP_REGISTRY:
