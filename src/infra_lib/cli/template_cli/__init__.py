@@ -1,4 +1,4 @@
-from .template_cli import template_cli
+from .template_cli import template_command
 
 
-__all__ = ["template_cli"]
+__all__ = ["template_command"]

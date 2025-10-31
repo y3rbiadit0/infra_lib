@@ -41,7 +41,7 @@ _INSTANCE_CACHE: Dict[Type, Any] = {}
 	multiple=True,
 	help="Operation to run. Can be specified multiple times.",
 )
-def run_cli(environment: str, project_root: Path, operations: tuple[str]):
+def run_command(environment: str, project_root: Path, operations: tuple[str]):
 	"""Run infrastructure operations for a specified environment."""
 	env = InfraEnvironment(environment)
 
@@ -186,4 +186,4 @@ def _get_or_create_instance(cls: Type) -> Any:
 
 
 if __name__ == "__main__":
-	run_cli()
+	run_command()

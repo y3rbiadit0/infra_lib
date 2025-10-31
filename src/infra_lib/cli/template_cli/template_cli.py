@@ -7,7 +7,7 @@ from .templates_handler import get_template_handler
 @click.command("init")
 @click.option("--stack", required=True, type=str, help="Type of stack to initialize (e.g., .net8)")
 @click.option("--provider", required=True, type=str, help="Cloud provider (e.g., aws, azure)")
-def template_cli(stack, provider):
+def template_command(stack, provider):
 	"""Initialize a new infrastructure stack template."""
 	click.echo(f"Initializing stack '{stack}' for provider '{provider}'...")
 
@@ -21,4 +21,4 @@ def template_cli(stack, provider):
 
 
 if __name__ == "__main__":
-	template_cli()
+	template_command()

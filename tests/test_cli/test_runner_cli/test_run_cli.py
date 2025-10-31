@@ -4,7 +4,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch
 from click.testing import CliRunner
 
-from infra_lib.cli.runner_cli.run_cli import run_cli, _execute_op_with_deps, _get_or_create_instance
+from infra_lib.cli.runner_cli.run_cli import run_command, _execute_op_with_deps, _get_or_create_instance
 from infra_lib.cli.runner_cli.infra_op_decorator import OP_REGISTRY
 from infra_lib.cli.runner_cli.exceptions import ConfigError, OpError, CycleError
 from infra_lib import InfraEnvironment, EnvironmentContext
@@ -43,7 +43,7 @@ def mock_discover_and_context(mock_context):
 
 class TestRunCli:
 	def test_should_require_environment_flag(self, runner):
-		result = runner.invoke(run_cli, [])
+		result = runner.invoke(run_command, [])
 
 		assert result.exit_code != 0
 		assert "Missing option" in result.output or "Error" in result.output
@@ -57,7 +57,7 @@ class TestRunCli:
 		decorated_op = decorator(op.handler)
 
 		with runner.isolated_filesystem():
-			result = runner.invoke(run_cli, ["-e", env.value, "-p", tmp_path])
+			result = runner.invoke(run_command, ["-e", env.value, "-p", tmp_path])
 
 		assert result.exit_code == 0
 		assert "Available operations" in result.output
@@ -73,7 +73,7 @@ class TestRunCli:
 		decorated_op = decorator(op.handler)
 
 		with runner.isolated_filesystem():
-			result = runner.invoke(run_cli, ["-e", env.value, "-op", op.name, "-p", tmp_path])
+			result = runner.invoke(run_command, ["-e", env.value, "-op", op.name, "-p", tmp_path])
 
 		assert result.exit_code == 0
 		mock_execute.assert_called_once()
@@ -83,7 +83,7 @@ class TestRunCli:
 	):
 		with runner.isolated_filesystem():
 			with caplog.at_level("WARNING"):
-				result = runner.invoke(run_cli, ["-e", InfraEnvironment.local, "-p", tmp_path])
+				result = runner.invoke(run_command, ["-e", InfraEnvironment.local, "-p", tmp_path])
 
 		assert result.exit_code == 0
 		assert "No operations found" in caplog.text

@@ -1,7 +1,7 @@
 import click
 
-from .runner_cli import run_cli
-from .template_cli import template_cli
+from .runner_cli import run_command
+from .template_cli import template_command
 from .__version__ import __version__
 
 
@@ -12,8 +12,8 @@ def infra_cli():
 	pass
 
 
-infra_cli.add_command(template_cli)
-infra_cli.add_command(run_cli)
+infra_cli.add_command(template_command)
+infra_cli.add_command(run_command)
 
 if __name__ == "__main__":
 	infra_cli()
