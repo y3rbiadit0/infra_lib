@@ -4,7 +4,11 @@ from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch
 from click.testing import CliRunner
 
-from infra_lib.cli.runner_cli.run_cli import run_command, _execute_op_with_deps, _get_or_create_instance
+from infra_lib.cli.runner_cli.run_cli import (
+	run_command,
+	_execute_op_with_deps,
+	_get_or_create_instance,
+)
 from infra_lib.cli.runner_cli.infra_op_decorator import OP_REGISTRY
 from infra_lib.cli.runner_cli.exceptions import ConfigError, OpError, CycleError
 from infra_lib import InfraEnvironment, EnvironmentContext
