@@ -1,0 +1,29 @@
+version: 0.2
+
+env:
+  variables:
+    PYTHON_VERSION: "3.13"
+
+phases:
+  install:
+    commands:
+      - echo "Installing uv..."
+      - curl -LsSf https://astral.sh/uv/install.sh | sh
+      - source "$HOME/.cargo/env"
+      
+      - echo "Setting up Python $PYTHON_VERSION using uv..."
+      - uv python install $PYTHON_VERSION
+
+  pre_build:
+    commands:
+      - echo "Installing dependencies with uv sync..."
+      - uv sync
+
+  build:
+    commands:
+      - echo "Running tests with uv run pytest for Python $PYTHON_VERSION..."
+      - uv run pytest
+
+cache:
+  paths:
+    - '~/.cache/uv/**/*'
