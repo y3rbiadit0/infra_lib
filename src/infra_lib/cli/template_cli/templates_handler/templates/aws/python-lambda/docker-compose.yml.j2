@@ -1,0 +1,15 @@
+services:
+  localstack:
+    profiles: ["local", "stage"]
+    image: localstack/localstack:4.7.0
+    container_name: localstack
+    ports:
+      - "4566:4566"  # AWS services endpoint
+      - "4510-4559:4510-4559"
+    environment:
+      - SERVICES={{ services | join(",") }}
+      - DEBUG=1
+      - DATA_DIR=/tmp/localstack/data
+    volumes:
+      - "{{ localstack_volume_dir | default('./volume') }}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"

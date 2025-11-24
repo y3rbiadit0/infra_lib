@@ -1,0 +1,25 @@
+from infra_lib import infra_operation, AWSLambdaParameters, AWSLambdaArchitecture, InfraEnvironment, AWSEnvironmentContext, AWSInfraProvider
+
+@infra_operation(
+    name="deploy-lambda",
+    description="Deploy the hello-world lambda",
+    target_envs=[InfraEnvironment.local, InfraEnvironment.stage]
+)
+def deploy_lambda(context: AWSEnvironmentContext):
+    """
+    Deploy the lambda function.
+    """
+    infra = AWSInfraProvider(context)
+    lambda_params = AWSLambdaParameters(
+        function_name="{{ project_name }}",
+        project_root=context.project_root.parent / "src" / "{{ project_name }}",
+        handler="app.handler",
+        api_id="hello-world-api",
+        runtime="python3.12",
+        arch=AWSLambdaArchitecture.x86_64,
+        memory_size=128,
+        timeout_secs=30,
+        environment=context.env(),
+        env_vars=context.env_vars,
+    )
+    infra.lambda_util.add_lambda(lambda_params)
