@@ -1,0 +1,28 @@
+from infra_lib import infra_operation, AWSInfraProvider, AWSEnvironmentContext, AWSLambdaParameters, AWSLambdaArchitecture, InfraEnvironment
+
+@infra_operation(name="deploy-lambda", description="Deploy the .NET 8 Lambda function.")
+def deploy_lambda(context: AWSEnvironmentContext):
+    """
+    Deploys the .NET 8 lambda function.
+    """
+    infra = AWSInfraProvider(context)
+    
+    # Create secrets
+    infra.secrets_util.create_secrets()
+
+    # Create lambda
+    lambda_params = AWSLambdaParameters(
+        project_root=context.project_root.parent,
+        function_name="test-lambda",
+        api_id="gateway-example",
+        runtime="dotnet8",
+        memory_size=256,
+        timeout_secs=900,
+        environment=context.env(),
+        env_vars=context.env_vars,
+        handler="{{ project_name }}::{{ project_name }}.LambdaApp::HandlerAsync"
+    )
+    infra.lambda_util.add_lambda(lambda_params)
+
+    # Create API Gateway
+    infra.api_gateway_util.create_api_gateway(api_id="gateway-example")

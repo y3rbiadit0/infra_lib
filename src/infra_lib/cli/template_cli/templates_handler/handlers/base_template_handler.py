@@ -34,21 +34,27 @@ class BaseTemplateHandler(ABC):
 
 	def generate(self):
 		"""Generate all core + extra infrastructure files"""
-		self._create_infrastructure_init()
+		self._create_environments_init()
+
+		common_files = self._get_common_files()
+		for tf in common_files:
+			tf.target.parent.mkdir(parents=True, exist_ok=True)
+			tf.generate(self.jinja_env)
+			logger.info(f"Generated {tf.target}")
 
 		for env in self.environments:
 			logger.info(f"Generating for {env}...")
 
 			self._create_env_init(env)
 
-			files = self._get_core_files(env) + self.get_extra_files(env)
+			files = self._get_env_specific_files(env) + self.get_extra_files(env)
 
 			for tf in files:
 				tf.target.parent.mkdir(parents=True, exist_ok=True)
 				tf.generate(self.jinja_env)
 				logger.info(f"Generated {tf.target}")
 
-		VSCodeGenerator(self.project_root).add_tasks(self.vscode_configurations())
+		VSCodeGenerator(self.project_root.parent).add_tasks(self.vscode_configurations())
 		logger.info("Infrastructure scaffolding complete!")
 
 	def _create_env_init(self, infra_environment: str):
@@ -56,17 +62,17 @@ class BaseTemplateHandler(ABC):
 		Create __init__.py inside environment folders (local, stage, prod)
 		that imports its environment-specific infra class.
 		"""
-		env_dir = self.project_root / "infrastructure" / infra_environment
+		env_dir = self.project_root / "environments" / infra_environment
 		env_dir.mkdir(parents=True, exist_ok=True)
 		init_file = env_dir / "__init__.py"
 
 		import_line = (
-			f"from .infra_{infra_environment} import {infra_environment.capitalize()}Infra\n"
+			f"from .{infra_environment} import {infra_environment.capitalize()}Context\n"
 		)
 		init_file.write_text(import_line)
 		logger.info(f"Created {init_file} with import for {infra_environment}")
 
-	def _create_infrastructure_init(self):
+	def _create_environments_init(self):
 		"""
 		Create infrastructure/__init__.py that imports all environment classes.
 		Example:
@@ -74,32 +80,37 @@ class BaseTemplateHandler(ABC):
 		    from .stage import StageInfra
 		    from .prod import ProdInfra
 		"""
-		infra_dir = self.project_root / "infrastructure"
+		infra_dir = self.project_root / "environments"
 		infra_dir.mkdir(exist_ok=True)
-		lines = [f"from .{env} import {env.capitalize()}Infra\n" for env in self.environments]
+		lines = [f"from .{env} import {env.capitalize()}Context\n" for env in self.environments]
 		init_file = infra_dir / "__init__.py"
 		init_file.write_text("".join(lines))
 		logger.info(f"Created {init_file} importing all environments")
 
-	def _get_core_files(self, env: str) -> List[TemplateFile]:
+	def _get_common_files(self) -> List[TemplateFile]:
 		"""Core files that every handler must generate"""
-		env_dir = self.project_root / "infrastructure" / env
-
 		return [
 			TemplateFile(
-				source=self.templates_dir / "infra_class.py.j2",
-				target=env_dir / f"infra_{env}.py",
-				context_provider=lambda: self.get_infra_context(env),
+				source=self.templates_dir / "docker-compose.yml.j2",
+				target=self.project_root / "docker-compose.yml",
+				context_provider=self.get_docker_context,
 			),
 			TemplateFile(
 				source=self.templates_dir / ".env.j2",
-				target=env_dir / ".env",
-				context_provider=lambda: self.get_env_context(env),
+				target=self.project_root / ".env",
+				context_provider=lambda: self.get_env_context(self.environments[0]),
 			),
+		]
+
+	def _get_env_specific_files(self, env: str) -> List[TemplateFile]:
+		"""Core files that every handler must generate"""
+		env_dir = self.project_root / "environments" / env
+
+		return [
 			TemplateFile(
-				source=self.templates_dir / "docker-compose.yml.j2",
-				target=self.project_root / "infrastructure" / "docker-compose.yml",
-				context_provider=self.get_docker_context,
+				source=self.templates_dir / "env_context.py.j2",
+				target=env_dir / f"{env}.py",
+				context_provider=lambda: self.get_infra_context(env),
 			),
 		]
 

@@ -21,8 +21,8 @@ services:
   debug:
     profiles: ["local"]
     build:
-      context: ../
-      dockerfile: infrastructure/local/Dockerfile.debug
+      context: .
+      dockerfile: environments/local/Dockerfile.debug
       args:
         PROJECT_NAME: {{ project_name }}
     container_name: debug-${TARGET_ENV}

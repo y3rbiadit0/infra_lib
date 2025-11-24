@@ -4,7 +4,6 @@ from .handlers import (
 	AWSGenericTemplateHandler,
 	AWSNet8TemplateHandler,
 	AWSNet8LambdaTemplateHandler,
-	AWSLambdaPythonTemplateHandler,
 )
 
 TEMPLATE_ROOT = Path(__file__).parent / "templates"
@@ -16,10 +15,6 @@ TEMPLATE_REGISTRY = {
 		"net8_lambda": (
 			AWSNet8LambdaTemplateHandler,
 			TEMPLATE_ROOT / "aws" / "net8_lambda",
-		),
-		"python-lambda": (
-			AWSLambdaPythonTemplateHandler,
-			TEMPLATE_ROOT / "aws" / "python-lambda",
 		),
 	},
 	# "azure": { ... }  # future

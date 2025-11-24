@@ -1,0 +1,11 @@
+from infra_lib import infra_operation, AWSEnvironmentContext, AWSInfraProvider
+
+@infra_operation(name="deploy", description="Deploy resources for net8 stack")
+def deploy(context: AWSEnvironmentContext):
+    """
+    Deploy the infrastructure for the net8 stack.
+    """
+    infra = AWSInfraProvider(context)
+    
+    # Create secrets
+    infra.secrets_util.create_secrets()
