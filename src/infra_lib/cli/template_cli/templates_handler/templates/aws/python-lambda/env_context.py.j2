@@ -1,0 +1,5 @@
+from infra_lib import AWSEnvironmentContext, InfraEnvironment
+
+class {{ env.capitalize() }}Context(AWSEnvironmentContext):
+    def env(self) -> InfraEnvironment:
+        return InfraEnvironment.{{ env }}
