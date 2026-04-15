@@ -13,7 +13,7 @@ from ...infra.env_context import EnvironmentContext
 from .exceptions import ConfigError, OpError, CycleError
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format="%(me)s: %(message)s")
+logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s")
 
 _INSTANCE_CACHE: Dict[Type, Any] = {}
 

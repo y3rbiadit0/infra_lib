@@ -9,7 +9,7 @@ Built for reproducibility, extensibility, and developer productivity.
 
 ## ✨ Features
 
-* 📦 **Project Bootstrapping**: `infra-cli init` scaffolds new projects with environment-aware templates (e.g., `aws`, `net8_lambda`).
+* 📦 **Project Bootstrapping**: `infra-cli init` scaffolds new projects with environment-aware templates (for example `aws/net8_lambda`).
 * ⚙️ **Operation Runner**: `infra-cli run` executes infrastructure tasks for specific environments (`local`, `stage`, `prod`).
 * 🔗 **Dependency Management**: Automatically runs operations in the correct order based on `depends_on` declarations (DAG execution).
 * 🔌 **Extensible Operations**: Define custom operations with a simple `@infra_operation` decorator.
@@ -52,7 +52,7 @@ First, use the `init` command to create a new project from a template. This sets
 
 ```bash
 # Example: Create a .NET 8 AWS Lambda project
-infra-cli init --stack net8_lambda --provider aws
+infra-cli init --template aws/net8_lambda
 ```
 
 ### 2. ▶️ Run Your Infrastructure
@@ -71,12 +71,19 @@ infra-cli run -e stage --project-root ./infra -op deploy-api
 Create a new stack from a predefined template:
 
 ```bash
-infra-cli init --stack net8_lambda --provider aws
+infra-cli init --template aws/net8_lambda
 ```
 
 **Example:**
 > Creates a new AWS Lambda project using .NET 8.  
 > The project includes IaC templates, Jinja2 configurations, and environment folders.
+
+Available templates:
+
+- `aws/generic`
+- `aws/net8`
+- `aws/net8_lambda`
+- `aws/python-lambda`
 
 ---
 
@@ -100,7 +107,7 @@ No specific operation selected. Available operations:
 #### 2.2 Run a Specific Operation
 
 ```bash
-infra-cli run -e stage --project-root ./my-project -op deploy-api
+infra-cli run -e stage --project-root ./my-project/infra -op deploy-api
 ```
 
 What this does:
@@ -114,22 +121,24 @@ What this does:
 #### 2.3 Run Multiple Operations
 You can specify -op multiple times. Each operation and its dependency tree will be executed.
 ```bash
-infra-cli run -e prod -op deploy-api -op run-migrations
+infra-cli run -e prod --project-root ./my-project/infra -op deploy-api -op run-migrations
 ```
 ---
 
-### 3. ⚙️ Deploy Specific Tasks
+### 3. 📁 Project Root Rules
 
-Execute a single infrastructure task defined in your environment class:
+`infra-cli run` expects an `infra/` project root. By default it uses `./infra`, so these are equivalent:
 
 ```bash
-infra-cli deploy -t setup -e stage
+infra-cli run -e local
+infra-cli run -e local --project-root ./infra
 ```
 
-If you omit `--task`, it lists all available tasks for that environment:
+The `run` command imports user code from these locations:
 
-```bash
-infra-cli deploy -e prod
+```text
+infra/environments/<env>/<env>.py
+infra/operations/**/*.py
 ```
 
 ---
@@ -199,17 +208,14 @@ This is how you define a runnable task. You create functions (or class methods) 
 
 Example: `infra/operations/aws_ops.py`
 ```python
-
-#### Example 1: Operation as functions
-from infra_lib.cli.infra_op_decorator import infra_operation
-from infra_lib.infra.providers.aws_infra import AWSInfraProvider
-from ..environments.local.local import LocalContext # Your custom context
+from infra_lib import AWSInfraProvider, infra_operation
+from ..environments.local.local import LocalContext
 
 @infra_operation(
     description="Deploys the main S3 buckets",
     depends_on=["setup-iam-roles"] # Ensures 'setup-iam-roles' runs first
 )
-def deploy-s3-buckets(context: LocalContext):
+def deploy_s3_buckets(context: LocalContext):
     # 'context' is automatically injected by the runner
     print(f"Deploying S3 buckets for {context.env()}")
     
@@ -219,22 +225,23 @@ def deploy-s3-buckets(context: LocalContext):
     print(f"Service URL: {context.get_my_service_url()}")
 
 @infra_operation(description="Sets up base IAM roles")
-def setup-iam-roles(context: LocalContext):
+def setup_iam_roles(context: LocalContext):
     print("Setting up IAM...")
+```
 
+Method-based operations are also supported:
 
-#### Example 2: Operation as methods
-from infra_lib.cli.infra_op_decorator import infra_operation
-from infra_lib.infra.env_context import EnvironmentContext
+```python
+from infra_lib import EnvironmentContext, infra_operation
 
 class ApiOperations:
-    
+
     def __init__(self):
         # A parameterless __init__ is required
         print("Initializing ApiOperations class...")
 
     @infra_operation(description="Deploys the main API")
-    def deploy-api(self, context: EnvironmentContext):
+    def deploy_api(self, context: EnvironmentContext):
         # Both 'self' and 'context' are injected
         print(f"Deploying API for {context.env()}")
 ```
@@ -248,6 +255,7 @@ class ApiOperations:
         - `setup-iam-roles(context=LocalContext_instance)`
         - `deploy-s3-buckets(context=LocalContext_instance)`
 ---
+
 ## 🧰 Built-in Utilities
 Your operations can use helpers included with `infra_lib`:
 - `AWSInfraProvider`: Provides pre-configured utility clients for S3, Lambda, SQS, EventBridge, Secrets Manager, etc.

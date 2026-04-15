@@ -1,14 +1,3 @@
-class InfraError(Exception):
-	pass
+from ...exceptions import CycleError, ConfigError, InfraError, OpError
 
-
-class ConfigError(InfraError):
-	pass
-
-
-class OpError(InfraError):
-	pass
-
-
-class CycleError(InfraError):
-	pass
+__all__ = ["InfraError", "ConfigError", "OpError", "CycleError"]

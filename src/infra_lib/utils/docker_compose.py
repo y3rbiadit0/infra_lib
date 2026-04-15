@@ -49,17 +49,10 @@ class DockerCompose:
 		full_command = f"{self._base_command} {command}"
 		run_command(full_command, env_vars=self.env_context.env_vars)
 
-	def down(self, remove_volumes: bool = True):
+	def down(self, remove_volumes: bool = False):
 		logger.info("🛑 Stopping containers...")
-		profiles = " ".join(f"--profile {p}" for p in self.settings.profiles)
-
-		run_command(
-			cmd=f"docker compose -p {self.settings.compose_name} {profiles} "
-			f"-f {self.settings.compose_file} down",
-			env_vars=self.env_context.env_vars,
-		)
-
-		self._run_compose_command(f"down {'-v' if remove_volumes else ''}")
+		command = "down -v" if remove_volumes else "down"
+		self._run_compose_command(command)
 
 	def build(self):
 		logger.info("🏗️  Building containers...")

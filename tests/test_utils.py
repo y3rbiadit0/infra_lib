@@ -1,7 +1,10 @@
 import subprocess
+from pathlib import Path
 import pytest
 from unittest.mock import patch, MagicMock
 from infra_lib.utils import run_command
+from infra_lib.utils.docker_compose import DockerCompose, ComposeSettings
+from infra_lib import InfraEnvironment, EnvironmentContext
 
 
 def test_run_command_success():
@@ -48,4 +51,47 @@ def test_run_command_no_output():
 			stderr=subprocess.DEVNULL,
 			stdin=None,
 			env=None,
+		)
+
+
+def test_docker_compose_down_runs_single_command(tmp_path: Path):
+	compose_file = tmp_path / "docker-compose.yml"
+	compose_file.write_text("services: {}\n")
+	env_context = MagicMock(spec=EnvironmentContext)
+	env_context.env_vars = {"TARGET_ENV": "local"}
+	settings = ComposeSettings(
+		environment=InfraEnvironment.local,
+		compose_file=compose_file,
+		custom_profiles=["api"],
+		compose_name="infra-test",
+	)
+	compose = DockerCompose(settings, env_context)
+
+	with patch("infra_lib.utils.docker_compose.run_command") as mock_run_command:
+		compose.down(remove_volumes=True)
+
+		mock_run_command.assert_called_once_with(
+			f"docker compose -p infra-test -f {compose_file} --profile local --profile api down -v",
+			env_vars=env_context.env_vars,
+		)
+
+
+def test_docker_compose_down_skips_volume_flag_when_disabled(tmp_path: Path):
+	compose_file = tmp_path / "docker-compose.yml"
+	compose_file.write_text("services: {}\n")
+	env_context = MagicMock(spec=EnvironmentContext)
+	env_context.env_vars = {"TARGET_ENV": "local"}
+	settings = ComposeSettings(
+		environment=InfraEnvironment.local,
+		compose_file=compose_file,
+		custom_profiles=[],
+	)
+	compose = DockerCompose(settings, env_context)
+
+	with patch("infra_lib.utils.docker_compose.run_command") as mock_run_command:
+		compose.down(remove_volumes=False)
+
+		mock_run_command.assert_called_once_with(
+			f"docker compose -p infra -f {compose_file} --profile local down",
+			env_vars=env_context.env_vars,
 		)

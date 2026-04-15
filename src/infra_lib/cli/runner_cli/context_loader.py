@@ -10,7 +10,7 @@ from .exceptions import ConfigError
 from ...infra import InfraEnvironment
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format="%(me)s: %(message)s")
+logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s")
 
 
 def _import_module_from_path(module_name: str, file_path: Path) -> ModuleType:
