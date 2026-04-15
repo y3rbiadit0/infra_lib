@@ -41,6 +41,7 @@ def mock_discover_and_context(mock_context):
 		patch("infra_lib.cli.runner_cli.run_cli.discover_ops") as mock_discover,
 		patch("infra_lib.cli.runner_cli.run_cli.load_env_context_from_arg") as mock_load,
 	):
+		mock_discover.side_effect = lambda *_args, **_kwargs: OP_REGISTRY.copy()
 		mock_load.return_value = mock_context
 		yield mock_discover, mock_load
 
@@ -81,6 +82,7 @@ class TestRunCli:
 
 		assert result.exit_code == 0
 		mock_execute.assert_called_once()
+		assert mock_execute.call_args.kwargs["registry"] == OP_REGISTRY
 
 	def test_should_warn_when_no_operations_found(
 		self, runner, mock_discover_and_context, caplog, tmp_path
@@ -91,6 +93,30 @@ class TestRunCli:
 
 		assert result.exit_code == 0
 		assert "No operations found" in caplog.text
+
+	def test_should_list_discovered_registry_not_stale_global_registry(
+		self, runner, mock_context, tmp_path
+	):
+		stale_op = infra_op_factory(name="stale-op", target_envs=[InfraEnvironment.local])
+		infra_operation(name=stale_op.name, target_envs=[InfraEnvironment.local])(stale_op.handler)
+
+		fresh_op = infra_op_factory(name="fresh-op", target_envs=[InfraEnvironment.local])
+		fresh_registry = {fresh_op.name: fresh_op}
+
+		with (
+			patch("infra_lib.cli.runner_cli.run_cli.discover_ops", return_value=fresh_registry),
+			patch(
+				"infra_lib.cli.runner_cli.run_cli.load_env_context_from_arg",
+				return_value=mock_context,
+			),
+		):
+			result = runner.invoke(
+				run_command, ["-e", InfraEnvironment.local.value, "-p", tmp_path]
+			)
+
+		assert result.exit_code == 0
+		assert "fresh-op" in result.output
+		assert "stale-op" not in result.output
 
 
 class TestExecuteOpWithDeps:
@@ -221,7 +247,7 @@ class TestGetOrCreateInstance:
 			def __init__(self):
 				self.value = 42
 
-		instance = _get_or_create_instance(TestClass)
+		instance = _get_or_create_instance(TestClass, {})
 
 		assert isinstance(instance, TestClass)
 		assert instance.value == 42
@@ -230,10 +256,20 @@ class TestGetOrCreateInstance:
 		class TestClass:
 			pass
 
-		instance1 = _get_or_create_instance(TestClass)
-		instance2 = _get_or_create_instance(TestClass)
+		instance_cache = {}
+		instance1 = _get_or_create_instance(TestClass, instance_cache)
+		instance2 = _get_or_create_instance(TestClass, instance_cache)
 
 		assert instance1 is instance2
+
+	def test_should_not_reuse_instances_across_different_caches(self):
+		class TestClass:
+			pass
+
+		instance1 = _get_or_create_instance(TestClass, {})
+		instance2 = _get_or_create_instance(TestClass, {})
+
+		assert instance1 is not instance2
 
 	def test_should_raise_op_error_when_instantiation_fails(self):
 		class TestClass:
@@ -241,7 +277,7 @@ class TestGetOrCreateInstance:
 				raise ValueError("Cannot instantiate")
 
 		with pytest.raises(OpError, match="Failed to auto-instantiate"):
-			_get_or_create_instance(TestClass)
+			_get_or_create_instance(TestClass, {})
 
 	def test_should_raise_op_error_for_class_with_required_params(self):
 		class TestClass:
@@ -249,4 +285,4 @@ class TestGetOrCreateInstance:
 				self.param = required_param
 
 		with pytest.raises(OpError, match="parameterless __init__"):
-			_get_or_create_instance(TestClass)
+			_get_or_create_instance(TestClass, {})

@@ -4,3 +4,6 @@ line-length = 100
 quote-style = "double"
 indent-style = "tab"
 docstring-code-format = true
+
+[lint.per-file-ignores]
+"tests/**/*.py" = ["E731", "F401", "F541", "F811", "F841"]

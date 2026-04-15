@@ -1,4 +1,5 @@
 from collections.abc import Callable
+import inspect
 from typing import Dict
 
 
@@ -6,6 +7,7 @@ from .infra_op import InfraOp, OpHandler
 from ....infra.enums import InfraEnvironment
 
 OP_REGISTRY: Dict[str, InfraOp] = {}
+INFRA_OP_ATTR = "__infra_op__"
 
 
 def infra_operation(
@@ -31,6 +33,7 @@ def infra_operation(
 		if op_name in OP_REGISTRY:
 			raise ValueError(f"Duplicate operation name detected: {name}")
 
+		_set_op_metadata(func, infra_op)
 		OP_REGISTRY[op_name] = infra_op
 
 		return func
@@ -48,3 +51,13 @@ def _handle_name(name: str, func: Callable):
 	else:
 		op_name = name
 	return op_name
+
+
+def _set_op_metadata(func: OpHandler, infra_op: InfraOp):
+	try:
+		setattr(func, INFRA_OP_ATTR, infra_op)
+	except AttributeError:
+		if inspect.ismethod(func):
+			setattr(func.__func__, INFRA_OP_ATTR, infra_op)
+		else:
+			raise

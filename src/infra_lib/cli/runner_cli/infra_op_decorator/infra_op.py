@@ -1,6 +1,6 @@
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, List, Protocol, TypeVar, Union
+from typing import Any, List, TypeVar, Union
 
 from infra_lib.infra.enums import InfraEnvironment
 

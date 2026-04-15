@@ -1,5 +1,4 @@
 import logging
-from typing import Dict
 
 
 from .boto_client_factory import BotoClientFactory

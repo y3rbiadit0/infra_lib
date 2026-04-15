@@ -15,8 +15,6 @@ from .exceptions import ConfigError, OpError, CycleError
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s")
 
-_INSTANCE_CACHE: Dict[Type, Any] = {}
-
 
 @click.command("run")
 @click.option(
@@ -51,8 +49,8 @@ def run_command(environment: str, project_root: Path, operations: tuple[str]):
 
 	try:
 		operations_dir = project_root / "operations"
-		discover_ops(operations_dir)
-		if not OP_REGISTRY:
+		registry = discover_ops(operations_dir)
+		if not registry:
 			logger.warning("No operations found. Did you forget to decorate them?")
 			return
 
@@ -61,9 +59,10 @@ def run_command(environment: str, project_root: Path, operations: tuple[str]):
 		logger.info(f"Context loaded for project: {env_context.env()}")
 
 		ops_to_run: List[str]
+		instance_cache: Dict[Type, Any] = {}
 
 		if not operations:
-			ops_to_run = [op_name for op_name, op in OP_REGISTRY.items() if env in op.target_envs]
+			ops_to_run = [op_name for op_name, op in registry.items() if env in op.target_envs]
 			click.echo(
 				click.style("No specific operation selected. Available operations:", fg="yellow")
 			)
@@ -76,7 +75,14 @@ def run_command(environment: str, project_root: Path, operations: tuple[str]):
 
 		completed_actions = set()
 		for op_name in ops_to_run:
-			_execute_op_with_deps(op_name, env_context, completed_actions, visited=set())
+			_execute_op_with_deps(
+				op_name,
+				env_context,
+				completed_actions,
+				visited=set(),
+				registry=registry,
+				instance_cache=instance_cache,
+			)
 
 		logger.info(f"🎉 Successfully finished run for '{environment}' environment!")
 
@@ -93,6 +99,8 @@ def _execute_op_with_deps(
 	context: EnvironmentContext,
 	completed: Set[str],
 	visited: Set[str],
+	registry: Dict[str, InfraOp] | None = None,
+	instance_cache: Dict[Type, Any] | None = None,
 ):
 	"""
 	Recursively executes an action and its dependencies (DAG runner).
@@ -103,14 +111,23 @@ def _execute_op_with_deps(
 	if op_name in visited:
 		raise CycleError(f"Circular dependency detected: {op_name}")
 	visited.add(op_name)
+	registry = registry if registry is not None else OP_REGISTRY
+	instance_cache = instance_cache if instance_cache is not None else {}
 
 	try:
-		op: InfraOp = OP_REGISTRY[op_name]
+		op: InfraOp = registry[op_name]
 	except KeyError:
 		raise OpError(f"Action '{op_name}' not found in registry.")
 
 	for dep_name in op.depends_on:
-		_execute_op_with_deps(dep_name, context, completed, visited)
+		_execute_op_with_deps(
+			dep_name,
+			context,
+			completed,
+			visited,
+			registry=registry,
+			instance_cache=instance_cache,
+		)
 
 	args_to_pass = []
 	handler = op.handler
@@ -144,7 +161,7 @@ def _execute_op_with_deps(
 			if not isinstance(ops_class, type):
 				raise OpError(f"{ops_class} is not a class.")
 
-			instance = _get_or_create_instance(ops_class)
+			instance = _get_or_create_instance(ops_class, instance_cache)
 			args_to_pass.append(instance)
 
 		args_to_pass.append(context)
@@ -169,20 +186,20 @@ def _execute_op_with_deps(
 	visited.remove(op_name)
 
 
-def _get_or_create_instance(cls: Type) -> Any:
+def _get_or_create_instance(cls: Type, instance_cache: Dict[Type, Any]) -> Any:
 	"""
 	Gets a singleton instance of an operations class, creating it if needed.
 	Assumes the class has a no-argument __init__ method.
 	"""
-	if cls not in _INSTANCE_CACHE:
+	if cls not in instance_cache:
 		try:
-			_INSTANCE_CACHE[cls] = cls()
+			instance_cache[cls] = cls()
 		except Exception as e:
 			raise OpError(
 				f"Failed to auto-instantiate ops class {cls.__name__}. "
 				"Classes containing infra operations must have a parameterless __init__."
 			) from e
-	return _INSTANCE_CACHE[cls]
+	return instance_cache[cls]
 
 
 if __name__ == "__main__":

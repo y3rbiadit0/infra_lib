@@ -5,6 +5,9 @@
 - Install deps with `uv sync`.
 
 ## Verification
+- Format check: `uv run ruff format --check .`
+- Lint: `uv run ruff check .`
+- Dead code analysis: `uv run vulture src`
 - Full test suite: `uv run pytest`
 - Focused test: `uv run pytest tests/test_cli/test_runner_cli/test_run_cli.py -k <pattern>`
 - Formatting uses Ruff: `uv run ruff format .`

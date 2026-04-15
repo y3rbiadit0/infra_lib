@@ -121,14 +121,20 @@ class TestDiscoverOps:
 		ops_dir.mkdir()
 
 		op_file = Path(ops_dir / "test_op.py")
-		op_file.write_text("OPERATION_NAME = 'test_operation'")
+		op_file.write_text(
+			textwrap.dedent("""
+			from infra_lib import infra_operation
 
-		discover_ops(ops_dir)
+			@infra_operation(description="test op")
+			def test_operation(ctx=None):
+				return "ok"
+			""")
+		)
+
+		registry = discover_ops(ops_dir)
 
 		assert "infra.operations.test_op" in sys.modules
-		module = sys.modules["infra.operations.test_op"]
-		assert hasattr(module, "OPERATION_NAME")
-		assert module.OPERATION_NAME == "test_operation"
+		assert "test-operation" in registry
 
 	def test_should_skip_files_starting_with_underscore(self, tmp_path):
 		ops_dir = Path(tmp_path / "operations")
@@ -137,9 +143,10 @@ class TestDiscoverOps:
 		private_file = ops_dir / "_private.py"
 		private_file.write_text("PRIVATE_VAR = 'should_not_load'")
 
-		discover_ops(ops_dir)
+		registry = discover_ops(ops_dir)
 
 		assert "infra.operations._private" not in sys.modules
+		assert registry == {}
 
 	def test_should_discover_nested_operation_files(self, tmp_path):
 		ops_dir = Path(tmp_path / "operations")
@@ -147,19 +154,29 @@ class TestDiscoverOps:
 		nested_dir.mkdir(parents=True)
 
 		nested_op = nested_dir / "nested_op.py"
-		nested_op.write_text("NESTED_OP = 'deep_operation'")
+		nested_op.write_text(
+			textwrap.dedent("""
+			from infra_lib import infra_operation
 
-		discover_ops(ops_dir)
+			@infra_operation(description="deep op")
+			def nested_op(ctx=None):
+				return "deep"
+			""")
+		)
+
+		registry = discover_ops(ops_dir)
 
 		assert "infra.operations.nested.deep.nested_op" in sys.modules
+		assert "nested-op" in registry
 
 	def test_should_handle_nonexistent_ops_directory(self, tmp_path, caplog):
 		ops_dir = tmp_path / "nonexistent"
 
 		with caplog.at_level("WARNING"):
-			discover_ops(ops_dir)
+			registry = discover_ops(ops_dir)
 
 		assert "Operations directory not found" in caplog.text
+		assert registry == {}
 
 	def test_should_log_error_for_invalid_operation_file(self, tmp_path, caplog):
 		ops_dir = Path(tmp_path / "operations")

@@ -41,7 +41,7 @@ def template_command(template_name, list_templates, project_dir):
 			handler = handler_cls(template_dir, infra_dir, stack)
 			handler.generate()
 			click.echo("Stack initialization complete!")
-		except (ValueError, KeyError) as e:
+		except (ValueError, KeyError):
 			click.echo(
 				f"Error: Invalid template '{template_name}'. Use --list-templates to see options.",
 				err=True,

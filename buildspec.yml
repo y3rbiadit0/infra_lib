@@ -19,6 +19,12 @@ phases:
 
   build:
     commands:
+      - echo "Checking formatting with uv run ruff format --check ..."
+      - uv run ruff format --check .
+      - echo "Running lint with uv run ruff check ..."
+      - uv run ruff check .
+      - echo "Running dead code analysis with uv run vulture ..."
+      - uv run vulture src
       - echo "Running tests with uv run pytest for Python $PYTHON_VERSION..."
       - uv run pytest
 

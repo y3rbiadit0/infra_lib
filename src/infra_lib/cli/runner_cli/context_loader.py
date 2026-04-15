@@ -4,7 +4,9 @@ import logging
 from pathlib import Path
 import sys
 from types import ModuleType
+from typing import Dict
 
+from .infra_op_decorator import INFRA_OP_ATTR, OP_REGISTRY, InfraOp
 from ...infra.env_context import EnvironmentContext
 from .exceptions import ConfigError
 from ...infra import InfraEnvironment
@@ -76,10 +78,15 @@ def load_env_context_from_arg(env: InfraEnvironment, project_root: Path) -> Envi
 	return env_context_instance
 
 
-def discover_ops(ops_dir: Path):
+def discover_ops(ops_dir: Path) -> Dict[str, InfraOp]:
+	OP_REGISTRY.clear()
+	registry: Dict[str, InfraOp] = {}
+	imported_modules: list[ModuleType] = []
+	errors: list[str] = []
+
 	if not ops_dir.is_dir():
 		logger.warning(f"Operations directory not found: {ops_dir}")
-		return
+		return registry
 
 	for file_path in ops_dir.glob("**/*.py"):
 		if file_path.name.startswith("_"):
@@ -90,6 +97,39 @@ def discover_ops(ops_dir: Path):
 		module_name = f"infra.operations.{module_path}"
 
 		try:
-			_import_module_from_path(module_name, file_path)
+			module = _import_module_from_path(module_name, file_path)
+			imported_modules.append(module)
 		except Exception as e:
 			logger.error(f"Could not load operation file {file_path}: {e}")
+			errors.append(str(file_path))
+
+	for module in imported_modules:
+		for op in _collect_ops_from_module(module).values():
+			if op.name in registry:
+				raise ConfigError(f"Duplicate operation name detected: {op.name}")
+			registry[op.name] = op
+
+	if errors and not registry:
+		return registry
+
+	return registry
+
+
+def _collect_ops_from_module(module: ModuleType) -> Dict[str, InfraOp]:
+	registry: Dict[str, InfraOp] = {}
+
+	for _, obj in inspect.getmembers(module, inspect.isfunction):
+		op = getattr(obj, INFRA_OP_ATTR, None)
+		if op is not None:
+			registry[op.name] = op
+
+	for _, cls in inspect.getmembers(module, inspect.isclass):
+		if cls.__module__ != module.__name__:
+			continue
+
+		for _, method in inspect.getmembers(cls, inspect.isfunction):
+			op = getattr(method, INFRA_OP_ATTR, None)
+			if op is not None:
+				registry[op.name] = op
+
+	return registry
