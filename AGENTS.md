@@ -12,6 +12,10 @@
 - Focused test: `uv run pytest tests/test_cli/test_runner_cli/test_run_cli.py -k <pattern>`
 - Formatting uses Ruff: `uv run ruff format .`
 
+## Dev Tools
+- Linux/macOS version bump helper: `uv run python devtools/bump_version.py [major|minor|patch]`
+- `devtools/bump_version.py --dry-run` shows the next version without modifying files.
+
 ## Repo Shape
 - This is a single Python package under `src/infra_lib`.
 - CLI entrypoint is `infra-cli`, defined by `infra_lib.cli:infra_cli`.

@@ -282,4 +282,15 @@ Read the full guide on **DeepWiki**:
 3. Commit your changes  
 4. Open a pull request 🚀
 
+## 🛠️ Dev Tools
+
+Version bump helper:
+
+```bash
+uv run python devtools/bump_version.py patch
+uv run python devtools/bump_version.py minor --dry-run
+```
+
+This updates `pyproject.toml` and `src/infra_lib/cli/__version__.py`, then optionally formats, commits, and tags the release.
+
 ---
