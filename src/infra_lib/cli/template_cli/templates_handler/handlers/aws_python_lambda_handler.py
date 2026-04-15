@@ -38,7 +38,7 @@ class AWSLambdaPythonTemplateHandler(BaseTemplateHandler):
 			TemplateFile(
 				source=self.templates_dir / "operations" / "deploy.py.j2",
 				target=self.project_root / "operations" / "deploy.py",
-				context_provider=lambda: {"project_name": project_name}
+				context_provider=lambda: {"project_name": project_name},
 			),
 			TemplateFile(
 				source=self.templates_dir / "src" / "hello.py",
@@ -57,8 +57,10 @@ class AWSLambdaPythonTemplateHandler(BaseTemplateHandler):
 				target=self.project_root / "aws_config" / "apigateway.json",
 				context_provider=lambda: {
 					"project_name": project_name,
-					"aws_default_region": self.get_env_context(InfraEnvironment.local)["aws_default_region"]
-				}
+					"aws_default_region": self.get_env_context(InfraEnvironment.local)[
+						"aws_default_region"
+					],
+				},
 			),
 		]
 		return files

@@ -87,12 +87,10 @@ class AWSNet8LambdaTemplateHandler(BaseTemplateHandler):
 			files.append(
 				TemplateFile(
 					source=self.templates_dir / "local" / "Dockerfile.debug.j2",
-					target=self.project_root
-					/ "environments"
-					/ "local"
-					/ "Dockerfile.debug",
-					context_provider=lambda: templates_env
-					| self.get_env_context(env=infra_environment),
+					target=self.project_root / "environments" / "local" / "Dockerfile.debug",
+					context_provider=lambda: (
+						templates_env | self.get_env_context(env=infra_environment)
+					),
 				)
 			)
 		return files

@@ -1,13 +1,26 @@
 import click
 from pathlib import Path
 
-from .templates_handler import get_template_handler, TEMPLATE_REGISTRY
+from .templates_handler import get_template_handler
+from .templates_handler.template_registry import TEMPLATE_REGISTRY
 
 
-@click.command("init", help="Initialize a new infrastructure stack from a template, or a blank project.")
-@click.option("-t", "--template", "template_name", default=None, help="Template name to use (e.g. 'aws/generic'). Leave empty for a blank project.")
-@click.option("-l", "--list-templates", "list_templates", is_flag=True, help="List available templates.")
-@click.argument("project_dir", type=click.Path(file_okay=False, dir_okay=True, path_type=Path), default=".")
+@click.command(
+	"init", help="Initialize a new infrastructure stack from a template, or a blank project."
+)
+@click.option(
+	"-t",
+	"--template",
+	"template_name",
+	default=None,
+	help="Template name to use (e.g. 'aws/generic'). Leave empty for a blank project.",
+)
+@click.option(
+	"-l", "--list-templates", "list_templates", is_flag=True, help="List available templates."
+)
+@click.argument(
+	"project_dir", type=click.Path(file_okay=False, dir_okay=True, path_type=Path), default="."
+)
 def template_command(template_name, list_templates, project_dir):
 	"""Initialize a new infrastructure stack template."""
 
@@ -29,7 +42,10 @@ def template_command(template_name, list_templates, project_dir):
 			handler.generate()
 			click.echo("Stack initialization complete!")
 		except (ValueError, KeyError) as e:
-			click.echo(f"Error: Invalid template '{template_name}'. Use --list-templates to see options.", err=True)
+			click.echo(
+				f"Error: Invalid template '{template_name}'. Use --list-templates to see options.",
+				err=True,
+			)
 			return
 	else:
 		click.echo("Initializing a blank infrastructure project...")

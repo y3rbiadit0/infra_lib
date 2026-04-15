@@ -66,9 +66,7 @@ class BaseTemplateHandler(ABC):
 		env_dir.mkdir(parents=True, exist_ok=True)
 		init_file = env_dir / "__init__.py"
 
-		import_line = (
-			f"from .{infra_environment} import {infra_environment.capitalize()}Context\n"
-		)
+		import_line = f"from .{infra_environment} import {infra_environment.capitalize()}Context\n"
 		init_file.write_text(import_line)
 		logger.info(f"Created {init_file} with import for {infra_environment}")
 

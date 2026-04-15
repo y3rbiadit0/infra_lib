@@ -64,8 +64,9 @@ class AWSNet8TemplateHandler(BaseTemplateHandler):
 				TemplateFile(
 					source=self.templates_dir / "local" / "Dockerfile.debug.j2",
 					target=self.project_root / "environments" / "local" / "Dockerfile.debug",
-					context_provider=lambda: templates_env
-					| self.get_env_context(env=infra_environment),
+					context_provider=lambda: (
+						templates_env | self.get_env_context(env=infra_environment)
+					),
 				)
 			)
 		return files
