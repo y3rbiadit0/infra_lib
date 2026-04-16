@@ -1,6 +1,6 @@
 [project]
 name = "infra_lib"
-version = "0.1.2"
+version = "0.1.3"
 description = "Python library for Infrastructure-as-Code orchestration"
 authors = [
     { name="Franco N. Merenda", email="merenda.franco83@gmail.com" }
