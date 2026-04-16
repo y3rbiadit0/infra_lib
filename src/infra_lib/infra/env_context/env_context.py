@@ -43,7 +43,11 @@ class EnvironmentContext(abc.ABC):
 		Returns:
 		    A Path object to the .env file.
 		"""
-		return self.environment_dir.parent / self.env().value / ".env"
+		return self.environment_dir / ".env"
+
+	def get_dotenv_paths(self) -> list[Path]:
+		"""Gets the ordered list of dotenv files to load for this context."""
+		return [self.get_dotenv_path()]
 
 	def pre_load_action(self):
 		"""A hook for subclasses to run logic before config is loaded.
@@ -61,12 +65,12 @@ class EnvironmentContext(abc.ABC):
 		values, and sets the TARGET_ENV variable.
 		"""
 		self.pre_load_action()
-		dotenv_path = self.get_dotenv_path()
 		loaded_vars = os.environ.copy()
 
-		if dotenv_path.exists():
-			dotenv_vars = dotenv_values(dotenv_path)
-			loaded_vars.update(dotenv_vars)
+		for dotenv_path in self.get_dotenv_paths():
+			if dotenv_path.exists():
+				dotenv_vars = dotenv_values(dotenv_path)
+				loaded_vars.update(dotenv_vars)
 
 		loaded_vars["TARGET_ENV"] = self.env().value
 

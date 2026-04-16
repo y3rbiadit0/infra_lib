@@ -16,6 +16,7 @@ class ComposeSettings:
 	environment: InfraEnvironment
 	compose_file: Path
 	custom_profiles: InitVar[List[str]]
+	compose_files: List[Path] | None = None
 
 	compose_name: str = "infra"
 	pre_compose_actions: List[Callable[[], None]] = None
@@ -29,6 +30,10 @@ class ComposeSettings:
 	def profiles(self) -> List[str]:
 		return [self.environment.value, *self._custom_profiles]
 
+	@property
+	def resolved_compose_files(self) -> List[Path]:
+		return self.compose_files or [self.compose_file]
+
 
 class DockerCompose:
 	"""A component for developers to use for running Docker Compose"""
@@ -37,13 +42,21 @@ class DockerCompose:
 		self.settings = compose_settings
 		self.env_context = env_context
 
-		if not self.settings.compose_file.exists():
-			raise FileNotFoundError(f"Docker Compose file {self.settings.compose_file} not found")
+		missing_files = [
+			compose_file
+			for compose_file in self.settings.resolved_compose_files
+			if not compose_file.exists()
+		]
+		if missing_files:
+			raise FileNotFoundError(f"Docker Compose file {missing_files[0]} not found")
 
 	@property
 	def _base_command(self) -> str:
+		compose_files = " ".join(
+			f"-f {compose_file}" for compose_file in self.settings.resolved_compose_files
+		)
 		profiles = " ".join(f"--profile {p}" for p in self.settings.profiles)
-		return f"docker compose -p {self.settings.compose_name} -f {self.settings.compose_file} {profiles}"
+		return f"docker compose -p {self.settings.compose_name} {compose_files} {profiles}"
 
 	def _run_compose_command(self, command: str):
 		full_command = f"{self._base_command} {command}"

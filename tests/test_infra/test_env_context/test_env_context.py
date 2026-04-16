@@ -33,8 +33,8 @@ def project_root(tmp_path) -> Path:
 
 
 @pytest.fixture
-def environment_dir(tmp_path) -> Path:
-	env_dir = Path(tmp_path / "infra" / "environments")
+def environment_dir(tmp_path, mock_infra_env: InfraEnvironment) -> Path:
+	env_dir = Path(tmp_path / "infra" / "environments" / mock_infra_env.value)
 	env_dir.mkdir(parents=True, exist_ok=True)
 	return env_dir
 
@@ -60,9 +60,7 @@ def trackable_context(
 
 @pytest.fixture
 def dotenv_path(environment_dir: Path, mock_infra_env: InfraEnvironment):
-	path = Path(environment_dir.parent / mock_infra_env.value)
-	path.mkdir(parents=True, exist_ok=True)
-	return Path(path / ".env")
+	return Path(environment_dir / ".env")
 
 
 @pytest.fixture
@@ -111,8 +109,11 @@ class TestEnvironmentContextPaths:
 	def test_should_return_correct_dotenv_path_structure(
 		self, context, environment_dir, mock_infra_env
 	):
-		expected_path = environment_dir.parent / mock_infra_env.value / ".env"
+		expected_path = environment_dir / ".env"
 		assert context.get_dotenv_path() == expected_path
+
+	def test_should_default_to_single_dotenv_path(self, context):
+		assert context.get_dotenv_paths() == [context.get_dotenv_path()]
 
 	def test_should_generate_different_paths_for_different_environments(
 		self, project_root, environment_dir
@@ -120,10 +121,12 @@ class TestEnvironmentContextPaths:
 		envs = [InfraEnvironment.local, InfraEnvironment.stage, InfraEnvironment.prod]
 
 		for env_name in envs:
+			env_specific_dir = environment_dir / env_name.value
+			env_specific_dir.mkdir(parents=True, exist_ok=True)
 			mock_env = MagicMock(value=env_name)
-			context = ConcreteEnvironmentContext(project_root, environment_dir, mock_env)
+			context = ConcreteEnvironmentContext(project_root, env_specific_dir, mock_env)
 
-			expected_path = environment_dir.parent / env_name / ".env"
+			expected_path = env_specific_dir / ".env"
 			assert context.get_dotenv_path() == expected_path
 
 
@@ -254,6 +257,27 @@ class TestEnvironmentContextLoadPrecedence:
 			assert context.env_vars.get("OS_VAR") == "os_value"
 			assert context.env_vars.get("ANOTHER_OS_VAR") == "another_value"
 			assert context.env_vars.get("DOTENV_VAR") == "dotenv_value"
+
+	def test_should_merge_multiple_dotenv_files_in_order(
+		self, project_root, mock_infra_env, mock_environ, tmp_path
+	):
+		env_dir = tmp_path / "infra" / "environments" / mock_infra_env.value
+		env_dir.mkdir(parents=True, exist_ok=True)
+		primary_dotenv = env_dir / ".env"
+		secondary_dotenv = env_dir / "env.build_tag"
+		primary_dotenv.write_text("SHARED=from_env\nRUNTIME_ONLY=runtime\n")
+		secondary_dotenv.write_text("SHARED=from_build_tag\nBUILD_ONLY=build\n")
+
+		class MultiDotenvContext(ConcreteEnvironmentContext):
+			def get_dotenv_paths(self) -> list[Path]:
+				return [primary_dotenv, secondary_dotenv]
+
+		context = MultiDotenvContext(project_root, env_dir, mock_infra_env)
+		context.load()
+
+		assert context.env_vars.get("RUNTIME_ONLY") == "runtime"
+		assert context.env_vars.get("BUILD_ONLY") == "build"
+		assert context.env_vars.get("SHARED") == "from_build_tag"
 
 
 class TestEnvironmentContextMultipleLoads:

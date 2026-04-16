@@ -95,3 +95,27 @@ def test_docker_compose_down_skips_volume_flag_when_disabled(tmp_path: Path):
 			f"docker compose -p infra -f {compose_file} --profile local down",
 			env_vars=env_context.env_vars,
 		)
+
+
+def test_docker_compose_supports_multiple_compose_files(tmp_path: Path):
+	compose_file = tmp_path / "docker-compose.yml"
+	override_file = tmp_path / "docker-compose.local.yml"
+	compose_file.write_text("services: {}\n")
+	override_file.write_text("services: {}\n")
+	env_context = MagicMock(spec=EnvironmentContext)
+	env_context.env_vars = {"TARGET_ENV": "local"}
+	settings = ComposeSettings(
+		environment=InfraEnvironment.local,
+		compose_file=compose_file,
+		compose_files=[compose_file, override_file],
+		custom_profiles=["local-frigate"],
+	)
+	compose = DockerCompose(settings, env_context)
+
+	with patch("infra_lib.utils.docker_compose.run_command") as mock_run_command:
+		compose.up()
+
+		mock_run_command.assert_called_once_with(
+			f"docker compose -p infra -f {compose_file} -f {override_file} --profile local --profile local-frigate up -d",
+			env_vars=env_context.env_vars,
+		)
