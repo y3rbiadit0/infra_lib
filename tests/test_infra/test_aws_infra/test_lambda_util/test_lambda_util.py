@@ -318,7 +318,5 @@ class TestLambdaUtil:
 			api_id=api_id, resource_path=resource_path
 		)
 
-		mock_logger_info.assert_any_call(
-			f"Lambda '{lambda_name}' is integrated with API path '{resource_path}' "
-			f"(GET) -> URL: {expected_url}"
-		)
+		mock_logger_info.assert_any_call(f"Mapped Lambda '{lambda_name}' to GET {resource_path}")
+		mock_logger_info.assert_any_call(f"API endpoint: {expected_url}")

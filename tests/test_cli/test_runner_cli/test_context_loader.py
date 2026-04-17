@@ -188,4 +188,4 @@ class TestDiscoverOps:
 		with caplog.at_level("ERROR"):
 			discover_ops(ops_dir)
 
-		assert "Could not load operation file" in caplog.text
+		assert "Failed to load operation file" in caplog.text
