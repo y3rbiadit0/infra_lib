@@ -2,6 +2,7 @@ import abc
 import os
 from pathlib import Path
 from typing import Dict, Optional
+
 from dotenv import dotenv_values
 
 from ...infra.enums import InfraEnvironment
@@ -10,12 +11,13 @@ from ...infra.enums import InfraEnvironment
 class EnvironmentContext(abc.ABC):
 	"""Stores environment-specific configuration.
 
-	Configuration is loaded via the .load() method and stored in the
-	env_vars attribute. This class does not modify the global os.environ.
+	Configuration is loaded via the .load() method and stored in
+	container_env_vars and host_env_vars. This class updates global os.environ.
 
 	Attributes:
 	    config_dir: The root directory for configuration files.
-	    env_vars: A dictionary holding the loaded environment variables.
+	    container_env_vars: The environment variables for containers.
+	    host_env_vars: The environment variables used for host subprocesses.
 	"""
 
 	def __init__(self, project_root: Path, environment_dir: Path):
@@ -26,8 +28,17 @@ class EnvironmentContext(abc.ABC):
 		"""
 		self.project_root: Path = project_root
 		self.environment_dir: Path = environment_dir
-		self.env_vars: Dict[str, str] = {}
+		self._container_env_vars: Dict[str, str] = {}
+		self._host_env_vars: Dict[str, str] = {}
 		super().__init__()
+
+	@property
+	def container_env_vars(self) -> Dict[str, str]:
+		return self._container_env_vars.copy()
+
+	@property
+	def host_env_vars(self) -> Dict[str, str]:
+		return self._host_env_vars.copy()
 
 	@abc.abstractmethod
 	def env(self) -> InfraEnvironment:
@@ -57,28 +68,44 @@ class EnvironmentContext(abc.ABC):
 		"""
 		pass
 
+	def _build_container_env_vars(
+		self, extra_vars: Optional[Dict[str, str]] = None
+	) -> Dict[str, str]:
+		container_env_vars: Dict[str, str] = {}
+
+		for dotenv_path in self.get_dotenv_paths():
+			if dotenv_path.exists():
+				dotenv_vars = {
+					key: value
+					for key, value in dotenv_values(dotenv_path).items()
+					if value is not None
+				}
+				container_env_vars.update(dotenv_vars)
+
+		container_env_vars["TARGET_ENV"] = self.env().value
+
+		if extra_vars:
+			container_env_vars.update(extra_vars)
+
+		return container_env_vars
+
+	def _build_host_env_vars(self, container_env_vars: Dict[str, str]) -> Dict[str, str]:
+		host_env_vars = os.environ.copy()
+		host_env_vars.update(container_env_vars)
+		return host_env_vars
+
 	def load(self, extra_vars: Optional[Dict[str, str]] = None):
-		"""Loads configuration into the self.env_vars dictionary.
+		"""Loads configuration into container and host environment dictionaries.
 
 		This method is the main entry point for loading configuration.
 		It calls pre_load_action, determines the .env path, loads the
 		values, and sets the TARGET_ENV variable.
 		"""
 		self.pre_load_action()
-		loaded_vars = os.environ.copy()
 
-		for dotenv_path in self.get_dotenv_paths():
-			if dotenv_path.exists():
-				dotenv_vars = dotenv_values(dotenv_path)
-				loaded_vars.update(dotenv_vars)
-
-		loaded_vars["TARGET_ENV"] = self.env().value
-
-		if extra_vars:
-			loaded_vars.update(extra_vars)
-
-		self.env_vars = loaded_vars
-		os.environ.update(loaded_vars)
+		self._container_env_vars = self._build_container_env_vars(extra_vars)
+		self._host_env_vars = self._build_host_env_vars(self.container_env_vars)
+		os.environ.update(self._host_env_vars)
 
 	def get(self, key: str, default: Optional[str] = None) -> Optional[str]:
 		"""Safe getter for accessing configuration values.
@@ -90,4 +117,4 @@ class EnvironmentContext(abc.ABC):
 		Returns:
 		    The value of the environment variable, or the default.
 		"""
-		return self.env_vars.get(key, default)
+		return self._container_env_vars.get(key, default)

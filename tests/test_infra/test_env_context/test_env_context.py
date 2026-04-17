@@ -83,8 +83,10 @@ class TestEnvironmentContextInitialization:
 
 		assert context.project_root == project_root
 		assert context.environment_dir == environment_dir
-		assert context.env_vars == {}
-		assert isinstance(context.env_vars, dict)
+		assert context.container_env_vars == {}
+		assert context.host_env_vars == {}
+		assert isinstance(context.container_env_vars, dict)
+		assert isinstance(context.host_env_vars, dict)
 
 	def test_should_not_allow_direct_instantiation_of_abstract_class(
 		self, project_root, environment_dir
@@ -165,9 +167,9 @@ class TestEnvironmentContextLoadWithDotenv:
 	):
 		context.load()
 
-		assert context.env_vars.get("VAR1") == "value1"
-		assert context.env_vars.get("VAR2") == "value2"
-		assert context.env_vars.get("VAR3") == "value3"
+		assert context.container_env_vars.get("VAR1") == "value1"
+		assert context.container_env_vars.get("VAR2") == "value2"
+		assert context.container_env_vars.get("VAR3") == "value3"
 
 	def test_should_handle_empty_dotenv_file_gracefully(
 		self, context, dotenv_path, mock_infra_env, mock_environ
@@ -175,8 +177,8 @@ class TestEnvironmentContextLoadWithDotenv:
 		dotenv_path.write_text("")
 		context.load()
 
-		assert target_env_var_fixture() in context.env_vars
-		assert context.env_vars[target_env_var_fixture()] == mock_infra_env.value
+		assert target_env_var_fixture() in context.container_env_vars
+		assert context.container_env_vars[target_env_var_fixture()] == mock_infra_env.value
 
 	def test_should_handle_malformed_dotenv_entries(self, context, dotenv_path, mock_environ):
 		dotenv_path.write_text(
@@ -184,8 +186,8 @@ class TestEnvironmentContextLoadWithDotenv:
 		)
 
 		context.load()
-		assert "VALID_VAR" in context.env_vars
-		assert "ANOTHER_VALID" in context.env_vars
+		assert "VALID_VAR" in context.container_env_vars
+		assert "ANOTHER_VALID" in context.container_env_vars
 
 	def test_should_handle_special_characters_in_dotenv_values(
 		self, context, dotenv_path, mock_environ
@@ -197,8 +199,8 @@ class TestEnvironmentContextLoadWithDotenv:
 		)
 
 		context.load()
-		assert "URL" in context.env_vars
-		assert "PATH" in context.env_vars
+		assert "URL" in context.container_env_vars
+		assert "PATH" in context.container_env_vars
 
 
 class TestEnvironmentContextLoadWithExtraVars:
@@ -208,9 +210,9 @@ class TestEnvironmentContextLoadWithExtraVars:
 		extra_vars = {"EXTRA1": "extra_value1", "EXTRA2": "extra_value2"}
 		context.load(extra_vars=extra_vars)
 
-		assert context.env_vars.get("EXTRA1") == "extra_value1"
-		assert context.env_vars.get("EXTRA2") == "extra_value2"
-		assert context.env_vars.get(target_env_var_fixture()) == mock_infra_env.value
+		assert context.container_env_vars.get("EXTRA1") == "extra_value1"
+		assert context.container_env_vars.get("EXTRA2") == "extra_value2"
+		assert context.container_env_vars.get(target_env_var_fixture()) == mock_infra_env.value
 
 	def test_should_allow_extra_vars_to_override_dotenv_values(
 		self, context, populated_dotenv, mock_environ
@@ -218,19 +220,19 @@ class TestEnvironmentContextLoadWithExtraVars:
 		extra_vars = {"VAR1": "overridden_value"}
 		context.load(extra_vars=extra_vars)
 
-		assert context.env_vars.get("VAR1") == "overridden_value"
-		assert context.env_vars.get("VAR2") == "value2"
+		assert context.container_env_vars.get("VAR1") == "overridden_value"
+		assert context.container_env_vars.get("VAR2") == "value2"
 
 	def test_should_handle_empty_extra_vars_dict(self, context, mock_environ):
 		context.load(extra_vars={})
-		assert target_env_var_fixture() in context.env_vars
+		assert target_env_var_fixture() in context.container_env_vars
 
 	def test_should_accept_none_values_in_extra_vars(self, context, mock_environ):
 		extra_vars = {"VAR1": None, "VAR2": "value2"}
 		context.load(extra_vars=extra_vars)
 
-		assert context.env_vars.get("VAR1") is None
-		assert context.env_vars.get("VAR2") == "value2"
+		assert context.container_env_vars.get("VAR1") is None
+		assert context.container_env_vars.get("VAR2") == "value2"
 
 
 class TestEnvironmentContextLoadPrecedence:
@@ -243,9 +245,10 @@ class TestEnvironmentContextLoadPrecedence:
 
 			context.load(extra_vars=extra_vars)
 
-			assert context.env_vars.get("VAR1") == "from_extra"
-			assert context.env_vars.get("VAR2") == "from_dotenv"
-			assert context.env_vars.get("VAR3") == "from_extra"
+			assert context.container_env_vars.get("VAR1") == "from_extra"
+			assert context.container_env_vars.get("VAR2") == "from_dotenv"
+			assert context.container_env_vars.get("VAR3") == "from_extra"
+			assert context.host_env_vars.get("VAR1") == "from_extra"
 
 	def test_should_preserve_existing_os_environ_variables(
 		self, context, dotenv_path, mock_environ
@@ -254,9 +257,10 @@ class TestEnvironmentContextLoadPrecedence:
 			dotenv_path.write_text("DOTENV_VAR=dotenv_value\n")
 			context.load()
 
-			assert context.env_vars.get("OS_VAR") == "os_value"
-			assert context.env_vars.get("ANOTHER_OS_VAR") == "another_value"
-			assert context.env_vars.get("DOTENV_VAR") == "dotenv_value"
+			assert context.host_env_vars.get("OS_VAR") == "os_value"
+			assert context.host_env_vars.get("ANOTHER_OS_VAR") == "another_value"
+			assert context.container_env_vars.get("DOTENV_VAR") == "dotenv_value"
+			assert context.container_env_vars.get("OS_VAR") is None
 
 	def test_should_merge_multiple_dotenv_files_in_order(
 		self, project_root, mock_infra_env, mock_environ, tmp_path
@@ -275,21 +279,21 @@ class TestEnvironmentContextLoadPrecedence:
 		context = MultiDotenvContext(project_root, env_dir, mock_infra_env)
 		context.load()
 
-		assert context.env_vars.get("RUNTIME_ONLY") == "runtime"
-		assert context.env_vars.get("BUILD_ONLY") == "build"
-		assert context.env_vars.get("SHARED") == "from_build_tag"
+		assert context.container_env_vars.get("RUNTIME_ONLY") == "runtime"
+		assert context.container_env_vars.get("BUILD_ONLY") == "build"
+		assert context.container_env_vars.get("SHARED") == "from_build_tag"
 
 
 class TestEnvironmentContextMultipleLoads:
 	def test_should_update_env_vars_on_subsequent_loads(self, context, dotenv_path, mock_environ):
 		dotenv_path.write_text("VAR1=value1\n")
 		context.load()
-		assert context.env_vars.get("VAR1") == "value1"
+		assert context.container_env_vars.get("VAR1") == "value1"
 
 		dotenv_path.write_text("VAR1=updated_value\nVAR2=value2\n")
 		context.load()
-		assert context.env_vars.get("VAR1") == "updated_value"
-		assert context.env_vars.get("VAR2") == "value2"
+		assert context.container_env_vars.get("VAR1") == "updated_value"
+		assert context.container_env_vars.get("VAR2") == "value2"
 
 	def test_should_call_pre_load_action_on_each_load(self, trackable_context, mock_environ):
 		trackable_context.load()

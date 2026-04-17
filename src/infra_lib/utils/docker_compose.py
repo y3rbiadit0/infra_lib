@@ -1,3 +1,4 @@
+import json
 from dataclasses import InitVar, dataclass, field
 import logging
 from typing import Callable, List
@@ -60,12 +61,16 @@ class DockerCompose:
 
 	def _run_compose_command(self, command: str):
 		full_command = f"{self._base_command} {command}"
-		run_command(full_command, env_vars=self.env_context.env_vars)
+		run_command(full_command, env_vars=self.env_context.host_env_vars)
 
 	def _write_infra_env_file(self) -> Path:
-		"""Write infra-managed container environment values next to the compose file."""
+		"""Write the fully resolved project environment next to the compose file."""
 		env_file = self.env_context.project_root / ".infra-generated.env"
-		env_file.write_text(f"TARGET_ENV={self.env_context.env().value}\n")
+		lines = [
+			f"{key}={json.dumps(value)}"
+			for key, value in self.env_context.container_env_vars.items()
+		]
+		env_file.write_text("\n".join(lines) + "\n")
 		return env_file
 
 	def down(self, remove_volumes: bool = False):
