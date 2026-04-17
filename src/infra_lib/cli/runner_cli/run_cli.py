@@ -13,7 +13,6 @@ from ...infra.env_context import EnvironmentContext
 from .exceptions import ConfigError, OpError, CycleError
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s")
 
 
 @click.command("run")
@@ -51,23 +50,21 @@ def run_command(environment: str, project_root: Path, operations: tuple[str]):
 		operations_dir = project_root / "operations"
 		registry = discover_ops(operations_dir)
 		if not registry:
-			logger.warning("No operations found. Did you forget to decorate them?")
+			logger.warning("No operations found")
 			return
 
-		logger.info(f"Loading configuration for '{env}'...")
+		logger.info(f"Loading configuration for '{env}'")
 		env_context = load_env_context_from_arg(env, project_root)
-		logger.info(f"Context loaded for project: {env_context.env()}")
+		logger.info(f"Loaded context for environment: {env_context.env()}")
 
 		ops_to_run: List[str]
 		instance_cache: Dict[Type, Any] = {}
 
 		if not operations:
 			ops_to_run = [op_name for op_name, op in registry.items() if env in op.target_envs]
-			click.echo(
-				click.style("No specific operation selected. Available operations:", fg="yellow")
-			)
+			click.echo("Available operations:")
 			for op_name in ops_to_run:
-				click.echo(click.style(f"  - {op_name}", fg="green"))
+				click.echo(f"  - {op_name}")
 			return
 		else:
 			logger.info(f"Running specified operations: {', '.join(operations)}")
@@ -84,13 +81,13 @@ def run_command(environment: str, project_root: Path, operations: tuple[str]):
 				instance_cache=instance_cache,
 			)
 
-		logger.info(f"🎉 Successfully finished run for '{environment}' environment!")
+		logger.info(f"Run completed successfully for environment '{environment}'")
 
 	except (ConfigError, OpError, CycleError) as e:
-		logger.error(f"❌ Run failed: {e}")
+		logger.error(f"Run failed: {e}")
 		sys.exit(1)
 	except Exception as e:
-		logger.error(f"❌ An unexpected error occurred: {e}", exc_info=True)
+		logger.error(f"Unexpected error during run: {e}", exc_info=True)
 		sys.exit(1)
 
 
@@ -172,14 +169,14 @@ def _execute_op_with_deps(
 		raise e
 
 	if "all" not in op.target_envs and context.env() not in op.target_envs:
-		logger.info(f"⏭️ Skipping action '{op.name}' (not targeted for env: {context.env})")
+		logger.info(f"Skipping action '{op.name}' for environment '{context.env()}'")
 	else:
-		logger.info(f"▶️ Running action: {op.name}")
+		logger.info(f"Running action '{op.name}'")
 		try:
 			op.handler(*args_to_pass)
-			logger.info(f"✅ Finished action: {op.name}")
+			logger.info(f"Completed action '{op.name}'")
 		except Exception as e:
-			logger.error(f"❌ Error in action '{op.name}': {e}", exc_info=True)
+			logger.error(f"Action '{op.name}' failed: {e}", exc_info=True)
 			raise OpError(f"Failed during execution of '{op.name}'") from e
 
 	completed.add(op_name)

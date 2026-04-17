@@ -36,7 +36,7 @@ class EventBridgeUtil:
 
 	def create_stack(self, stack: EventBridgeStackConfig):
 		if not self.template_file(stack.template_name).exists():
-			logger.info(f"No EventBridge template at '{self.template_file}', skipping.")
+			logger.info(f"Skipping EventBridge stack '{stack.name}': template not found")
 			return
 
 		with open(self.template_file(stack.template_name), "r") as f:
@@ -52,6 +52,6 @@ class EventBridgeUtil:
 
 		try:
 			cfn.create_stack(StackName=stack.name, TemplateBody=template_body)
-			logger.info(f"EventBridge rule stack '{stack.name}' created.")
+			logger.info(f"Created EventBridge stack '{stack.name}'")
 		except cfn.exceptions.AlreadyExistsException:
-			logger.info(f"EventBridge rule stack '{stack.name}' already exists.")
+			logger.info(f"EventBridge stack '{stack.name}' already exists")

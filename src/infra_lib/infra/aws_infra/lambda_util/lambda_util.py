@@ -133,7 +133,7 @@ class LambdaUtil:
 			arch=lambda_params.arch,
 		)
 
-		logger.info(f"Lambda zip created at {lambda_zip_file}")
+		logger.info(f"Created Lambda package '{lambda_zip_file}'")
 
 		return lambda_zip_file
 
@@ -152,13 +152,13 @@ class LambdaUtil:
 				MemorySize=lambda_params.memory_size,
 				Timeout=lambda_params.timeout_secs,
 			)
-			logger.info(f"Lambda function '{lambda_params.function_name}' created.")
+			logger.info(f"Created Lambda function '{lambda_params.function_name}'")
 		except self._lambda_client.exceptions.ResourceConflictException:
-			logger.info(f"Lambda function '{lambda_params.function_name}' already exists.")
+			logger.info(f"Lambda function '{lambda_params.function_name}' already exists")
 
 	def _update_lambda_code(self, zip_path: str, function_name: str):
 		"""Updates the code for an existing Lambda function using the provided zip file."""
-		logger.info(f"Updating code for Lambda function '{function_name}'...")
+		logger.info(f"Updating Lambda function '{function_name}'")
 
 		try:
 			with open(zip_path, "rb") as f:
@@ -169,17 +169,17 @@ class LambdaUtil:
 				ZipFile=zip_bytes,
 			)
 
-			logger.info(f"Waiting for update to complete for '{function_name}'...")
+			logger.info(f"Waiting for Lambda update for '{function_name}'")
 			waiter = self._lambda_client.get_waiter("function_updated")
 			waiter.wait(FunctionName=function_name, WaiterConfig={"Delay": 5, "MaxAttempts": 12})
 
-			logger.info(f"Lambda function code for '{function_name}' successfully updated.")
+			logger.info(f"Updated Lambda function '{function_name}'")
 
 		except self._lambda_client.exceptions.ResourceNotFoundException:
-			logger.error(f"Lambda function '{function_name}' not found. Cannot update code.")
+			logger.error(f"Lambda function '{function_name}' not found")
 			raise
 		except Exception as e:
-			logger.error(f"Error updating lambda code for '{function_name}': {e}")
+			logger.error(f"Failed to update Lambda function '{function_name}': {e}")
 			raise
 
 	def _add_lambda_permission_for_apigateway(self, function_name: str, statement_id: str):
@@ -191,10 +191,10 @@ class LambdaUtil:
 				Principal="apigateway.amazonaws.com",
 				SourceArn=f"arn:aws:execute-api:{self.creds.region}:000000000000:local/*/*/*",
 			)
-			logger.info(f"Permission added for API Gateway on Lambda '{function_name}'.")
+			logger.info(f"Added API Gateway permission for Lambda '{function_name}'")
 
 		except self._lambda_client.exceptions.ResourceConflictException:
-			logger.info(f"Permission '{statement_id}' already exists for Lambda '{function_name}'.")
+			logger.info(f"Permission '{statement_id}' already exists for Lambda '{function_name}'")
 
 	def _log_lambda_paths_from_apigateway(self, lambda_name: str, api_id: str):
 		"""
@@ -216,13 +216,13 @@ class LambdaUtil:
 				uri = integration.get("uri", "")
 				if lambda_name in uri:
 					logger.info(
-						f"Lambda '{lambda_name}' is integrated with API path '{resource_path}' "
-						f"({method_name.upper()}) -> URL: {gateway_util.build_url(api_id=api_id, resource_path=resource_path)}"
+						f"Mapped Lambda '{lambda_name}' to {method_name.upper()} {resource_path}"
+					)
+					logger.info(
+						f"API endpoint: {gateway_util.build_url(api_id=api_id, resource_path=resource_path)}"
 					)
 					return
-		logger.info(
-			f"Lambda '{lambda_name}' is not integrated with API --> Check apigateway.json file"
-		)
+		logger.info(f"No API Gateway integration found for Lambda '{lambda_name}'")
 
 
 @dataclass

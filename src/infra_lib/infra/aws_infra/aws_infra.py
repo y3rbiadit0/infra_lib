@@ -1,6 +1,3 @@
-import logging
-
-
 from .boto_client_factory import BotoClientFactory
 from .creds import CredentialsProvider
 from .eventbridge_util import EventBridgeUtil
@@ -12,9 +9,6 @@ from .secrets_util import SecretsManagerUtil
 from .api_gateway_util import APIGatewayUtil
 from ..base_infra import BaseInfraProvider
 from ..env_context.aws_env_context import AWSEnvironmentContext
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
 class AWSInfraProvider(BaseInfraProvider):

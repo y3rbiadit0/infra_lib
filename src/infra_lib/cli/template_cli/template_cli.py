@@ -1,8 +1,11 @@
+import logging
 import click
 from pathlib import Path
 
 from .templates_handler import get_template_handler
 from .templates_handler.template_registry import TEMPLATE_REGISTRY
+
+logger = logging.getLogger(__name__)
 
 
 @click.command(
@@ -34,21 +37,21 @@ def template_command(template_name, list_templates, project_dir):
 	infra_dir = Path(project_dir) / "infra"
 
 	if template_name:
-		click.echo(f"Initializing stack from template '{template_name}'...")
+		logger.info(f"Initializing template '{template_name}'")
 		try:
 			provider, stack = template_name.split("/")
 			handler_cls, template_dir = get_template_handler(provider, stack)
 			handler = handler_cls(template_dir, infra_dir, stack)
 			handler.generate()
-			click.echo("Stack initialization complete!")
+			logger.info(f"Template initialization completed at '{infra_dir}'")
 		except (ValueError, KeyError):
 			click.echo(
-				f"Error: Invalid template '{template_name}'. Use --list-templates to see options.",
+				f"ERROR: Invalid template '{template_name}'. Use --list-templates to see options.",
 				err=True,
 			)
 			return
 	else:
-		click.echo("Initializing a blank infrastructure project...")
+		logger.info("Initializing blank infrastructure project")
 		infra_dir.mkdir(parents=True, exist_ok=True)
 		(infra_dir / "operations").mkdir(exist_ok=True)
 		(infra_dir / "environments").mkdir(exist_ok=True)
@@ -56,7 +59,7 @@ def template_command(template_name, list_templates, project_dir):
 		(infra_dir / "operations" / "__init__.py").touch()
 		(infra_dir / "environments" / "__init__.py").touch()
 
-		click.echo(f"Blank project created at: {infra_dir}")
+		logger.info(f"Blank project created at '{infra_dir}'")
 
 
 if __name__ == "__main__":

@@ -51,7 +51,7 @@ class APIGatewayUtil:
 			name=name, tags={"_custom_id_": custom_id}
 		)
 		api_id = response["id"]
-		logger.info(f"API Gateway created with custom ID: {api_id}")
+		logger.info(f"Created API Gateway '{api_id}'")
 		return api_id
 
 	def _import_api_definition(self, api_id: str, json_file: str):
@@ -59,12 +59,12 @@ class APIGatewayUtil:
 			body = f.read()
 
 		self.apigateway_client.put_rest_api(restApiId=api_id, mode="overwrite", body=body)
-		logger.info(f"API definition imported into API {api_id}")
+		logger.info(f"Imported API definition for '{api_id}'")
 
 	def _deploy_api_gateway(self, api_id: str, stage_name: str):
 		self.apigateway_client.create_deployment(restApiId=api_id, stageName=stage_name)
-		logger.info(f"API Gateway '{api_id}' deployed to stage '{stage_name}'.")
-		logger.info(f"📡 API available at: {self.build_url(api_id=api_id)}")
+		logger.info(f"Deployed API Gateway '{api_id}' to stage '{stage_name}'")
+		logger.info(f"API endpoint: {self.build_url(api_id=api_id)}")
 
 	def gateway_config_file(self) -> Dict:
 		with open(Path.joinpath(self.aws_config_dir, self.gateway_file), "r") as f:

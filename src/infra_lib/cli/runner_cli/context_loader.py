@@ -12,7 +12,6 @@ from .exceptions import ConfigError
 from ...infra import InfraEnvironment
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s")
 
 
 def _import_module_from_path(module_name: str, file_path: Path) -> ModuleType:
@@ -42,7 +41,7 @@ def load_env_context_from_arg(env: InfraEnvironment, project_root: Path) -> Envi
 	"""
 	environment_dir = Path.joinpath(project_root, "environments", env.value)
 	environment_py_path = Path.joinpath(environment_dir, f"{env.value}.py")
-	logger.info(f"Loading environment config from: {environment_py_path}")
+	logger.info(f"Loading environment '{env.value}'")
 
 	if not environment_py_path.exists():
 		raise ConfigError(f"Config file not found: {environment_py_path}")
@@ -100,7 +99,7 @@ def discover_ops(ops_dir: Path) -> Dict[str, InfraOp]:
 			module = _import_module_from_path(module_name, file_path)
 			imported_modules.append(module)
 		except Exception as e:
-			logger.error(f"Could not load operation file {file_path}: {e}")
+			logger.error(f"Failed to load operation file '{file_path}': {e}")
 			errors.append(str(file_path))
 
 	for module in imported_modules:

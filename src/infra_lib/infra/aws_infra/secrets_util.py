@@ -35,9 +35,7 @@ class SecretsManagerUtil:
 	def create_secrets(self, secrets_file: str = "secrets.json"):
 		secrets_file_path = Path.joinpath(self.config_dir, secrets_file)
 		if not os.path.exists(secrets_file_path):
-			logger.info(
-				f"No secrets file found at '{secrets_file_path}', skipping secrets creation."
-			)
+			logger.info(f"Skipping secrets creation: file not found at '{secrets_file_path}'")
 			return
 
 		with open(secrets_file_path, "r") as f:
@@ -46,6 +44,6 @@ class SecretsManagerUtil:
 		for name, value in secrets.items():
 			try:
 				value = self.secrets_client.create_secret(Name=name, SecretString=json.dumps(value))
-				logger.info(f"Secret '{name}' created.")
+				logger.info(f"Created secret '{name}'")
 			except self.secrets_client.exceptions.ResourceExistsException:
-				logger.info(f"Secret '{name}' already exists.")
+				logger.info(f"Secret '{name}' already exists")

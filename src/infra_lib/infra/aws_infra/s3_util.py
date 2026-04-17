@@ -30,12 +30,12 @@ class S3Util:
 
 		try:
 			self._s3_resource.meta.client.head_bucket(Bucket=bucket.name)
-			logger.info(f"Bucket '{bucket_name}' already exists.")
+			logger.info(f"Bucket '{bucket_name}' already exists")
 			return
 		except ClientError as e:
 			error_code = int(e.response["Error"]["Code"])
 			if error_code != 404:
-				logger.error(f"Error checking bucket existence: {e}")
+				logger.error(f"Failed to check bucket '{bucket_name}': {e}")
 				raise
 
 		try:
@@ -43,7 +43,7 @@ class S3Util:
 			self._s3_resource.create_bucket(
 				Bucket=bucket_name, CreateBucketConfiguration=create_bucket_config or None
 			)
-			logger.info(f"Bucket '{bucket_name}' created.")
+			logger.info(f"Created bucket '{bucket_name}'")
 		except ClientError as e:
 			logger.error(f"Failed to create bucket '{bucket_name}': {e}")
 			raise
@@ -53,7 +53,7 @@ class S3Util:
 		try:
 			bucket = self._s3_resource.Bucket(bucket_name)
 			bucket.upload_file(Filename=file_path, Key=key)
-			logger.info(f"File '{file_path}' uploaded to '{bucket_name}/{key}'.")
+			logger.info(f"Uploaded '{file_path}' to '{bucket_name}/{key}'")
 		except ClientError as e:
 			logger.error(f"Failed to upload file '{file_path}' to '{bucket_name}/{key}': {e}")
 			raise

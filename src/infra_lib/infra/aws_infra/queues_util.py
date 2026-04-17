@@ -54,7 +54,7 @@ class QueuesUtil:
 					"VisibilityTimeout": str(q.visibility_timeout),
 				},
 			)
-			logger.info(f"Queue created: {q.name} (Visibility {q.visibility_timeout}s)")
+			logger.info(f"Created queue '{q.name}'")
 
 	def attach_lambda(self, lambda_func: AWSLambdaParameters, queue_config: AWSQueueConfig):
 		account_id = self._sts_util.get_account_id()
@@ -67,4 +67,4 @@ class QueuesUtil:
 				["ReportBatchItemFailures"] if queue_config.report_batch_item_failures else []
 			),
 		)
-		logger.info(f"Queue {queue_config.name} linked to Lambda {lambda_func.function_name}")
+		logger.info(f"Attached queue '{queue_config.name}' to Lambda '{lambda_func.function_name}'")
