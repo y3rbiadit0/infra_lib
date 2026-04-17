@@ -62,15 +62,22 @@ class DockerCompose:
 		full_command = f"{self._base_command} {command}"
 		run_command(full_command, env_vars=self.env_context.env_vars)
 
+	def _write_infra_env_file(self) -> Path:
+		"""Write infra-managed container environment values next to the compose file."""
+		env_file = self.env_context.project_root / ".infra-generated.env"
+		env_file.write_text(f"TARGET_ENV={self.env_context.env().value}\n")
+		return env_file
+
 	def down(self, remove_volumes: bool = False):
-		logger.info("🛑 Stopping containers...")
+		logger.info("Stopping containers")
 		command = "down -v" if remove_volumes else "down"
 		self._run_compose_command(command)
 
 	def build(self):
-		logger.info("🏗️  Building containers...")
+		logger.info("Building containers")
 		self._run_compose_command("build")
 
 	def up(self, detach: bool = True):
-		logger.info("🚀 Starting containers...")
+		logger.info("Starting containers")
+		self._write_infra_env_file()
 		self._run_compose_command(f"up {'-d' if detach else ''}")

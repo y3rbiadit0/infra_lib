@@ -9,7 +9,6 @@ from .....infra.enums import InfraEnvironment
 from ..template_file import TemplateFile, VSCodeGenerator, VSCodeLaunchConfig
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
 class BaseTemplateHandler(ABC):
@@ -35,16 +34,16 @@ class BaseTemplateHandler(ABC):
 	def generate(self):
 		"""Generate all core + extra infrastructure files"""
 		self._create_environments_init()
+		self._ensure_infra_gitignore()
 
 		common_files = self._get_common_files()
 		for tf in common_files:
 			tf.target.parent.mkdir(parents=True, exist_ok=True)
 			tf.generate(self.jinja_env)
-			logger.info(f"Generated {tf.target}")
+
+		logger.info(f"Generated {len(common_files)} shared infrastructure files")
 
 		for env in self.environments:
-			logger.info(f"Generating for {env}...")
-
 			self._create_env_init(env)
 
 			files = self._get_env_specific_files(env) + self.get_extra_files(env)
@@ -52,10 +51,28 @@ class BaseTemplateHandler(ABC):
 			for tf in files:
 				tf.target.parent.mkdir(parents=True, exist_ok=True)
 				tf.generate(self.jinja_env)
-				logger.info(f"Generated {tf.target}")
+
+			logger.info(f"Generated {len(files)} files for environment '{env}'")
 
 		VSCodeGenerator(self.project_root.parent).add_tasks(self.vscode_configurations())
-		logger.info("Infrastructure scaffolding complete!")
+		logger.info("Infrastructure scaffolding completed")
+
+	def _ensure_infra_gitignore(self):
+		"""Ensure infra-managed generated files stay untracked."""
+		gitignore = self.project_root / ".gitignore"
+		entry = ".infra-generated.env\n"
+
+		if gitignore.exists():
+			content = gitignore.read_text()
+			if entry.strip() in {line.strip() for line in content.splitlines()}:
+				return
+		else:
+			content = ""
+
+		with gitignore.open("a") as f:
+			if content and not content.endswith("\n"):
+				f.write("\n")
+			f.write(entry)
 
 	def _create_env_init(self, infra_environment: str):
 		"""
@@ -68,7 +85,6 @@ class BaseTemplateHandler(ABC):
 
 		import_line = f"from .{infra_environment} import {infra_environment.capitalize()}Context\n"
 		init_file.write_text(import_line)
-		logger.info(f"Created {init_file} with import for {infra_environment}")
 
 	def _create_environments_init(self):
 		"""
@@ -83,7 +99,6 @@ class BaseTemplateHandler(ABC):
 		lines = [f"from .{env} import {env.capitalize()}Context\n" for env in self.environments]
 		init_file = infra_dir / "__init__.py"
 		init_file.write_text("".join(lines))
-		logger.info(f"Created {init_file} importing all environments")
 
 	def _get_common_files(self) -> List[TemplateFile]:
 		"""Core files that every handler must generate"""

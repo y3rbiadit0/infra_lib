@@ -104,6 +104,7 @@ def test_docker_compose_supports_multiple_compose_files(tmp_path: Path):
 	override_file.write_text("services: {}\n")
 	env_context = MagicMock(spec=EnvironmentContext)
 	env_context.env_vars = {"TARGET_ENV": "local"}
+	env_context.project_root = tmp_path
 	settings = ComposeSettings(
 		environment=InfraEnvironment.local,
 		compose_file=compose_file,
