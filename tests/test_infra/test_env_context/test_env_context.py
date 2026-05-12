@@ -120,6 +120,9 @@ class TestEnvironmentContextPaths:
 	def test_should_return_generated_env_path_in_environment_dir(self, context, environment_dir):
 		assert context.get_generated_env_path() == environment_dir / ".infra.generated.env"
 
+	def test_should_default_to_no_extra_env_vars(self, context):
+		assert context.get_extra_env_vars() == {}
+
 	def test_should_generate_different_paths_for_different_environments(
 		self, project_root, environment_dir
 	):
@@ -207,6 +210,43 @@ class TestEnvironmentContextLoadWithDotenv:
 
 
 class TestEnvironmentContextLoadWithExtraVars:
+	def test_should_merge_context_extra_env_vars(
+		self, project_root, environment_dir, mock_infra_env
+	):
+		class ExtraEnvContext(ConcreteEnvironmentContext):
+			def get_extra_env_vars(self) -> dict[str, str]:
+				return {"EXTRA": "from_hook"}
+
+		context = ExtraEnvContext(project_root, environment_dir, mock_infra_env)
+		context.load()
+
+		assert context.container_env_vars.get("EXTRA") == "from_hook"
+
+	def test_should_allow_context_extra_env_vars_to_override_dotenv_values(
+		self, project_root, environment_dir, mock_infra_env, dotenv_path
+	):
+		class ExtraEnvContext(ConcreteEnvironmentContext):
+			def get_extra_env_vars(self) -> dict[str, str]:
+				return {"VAR1": "from_hook"}
+
+		dotenv_path.write_text("VAR1=from_dotenv\n")
+		context = ExtraEnvContext(project_root, environment_dir, mock_infra_env)
+		context.load()
+
+		assert context.container_env_vars.get("VAR1") == "from_hook"
+
+	def test_should_allow_load_extra_vars_to_override_context_extra_env_vars(
+		self, project_root, environment_dir, mock_infra_env
+	):
+		class ExtraEnvContext(ConcreteEnvironmentContext):
+			def get_extra_env_vars(self) -> dict[str, str]:
+				return {"VAR1": "from_hook"}
+
+		context = ExtraEnvContext(project_root, environment_dir, mock_infra_env)
+		context.load(extra_vars={"VAR1": "from_load"})
+
+		assert context.container_env_vars.get("VAR1") == "from_load"
+
 	def test_should_merge_extra_vars_with_loaded_config(
 		self, context, mock_infra_env, mock_environ
 	):

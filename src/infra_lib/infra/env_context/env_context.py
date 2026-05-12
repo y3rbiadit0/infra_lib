@@ -65,6 +65,10 @@ class EnvironmentContext(abc.ABC):
 		"""Gets the canonical infra-generated dotenv path for this context."""
 		return self.environment_dir / ".infra.generated.env"
 
+	def get_extra_env_vars(self) -> Dict[str, str]:
+		"""Return container env vars loaded after dotenv files and before load(extra_vars)."""
+		return {}
+
 	def write_generated_env_file(self) -> Path:
 		"""Write the fully resolved environment in the environment directory."""
 		env_file = self.get_generated_env_path()
@@ -95,6 +99,7 @@ class EnvironmentContext(abc.ABC):
 				container_env_vars.update(dotenv_vars)
 
 		container_env_vars["TARGET_ENV"] = self.env().value
+		container_env_vars.update(self.get_extra_env_vars())
 
 		if extra_vars:
 			container_env_vars.update(extra_vars)
@@ -110,8 +115,8 @@ class EnvironmentContext(abc.ABC):
 		"""Loads configuration into container and host environment dictionaries.
 
 		This method is the main entry point for loading configuration.
-		It calls pre_load_action, determines the .env path, loads the
-		values, and sets the TARGET_ENV variable.
+		It calls pre_load_action and builds container env vars with this precedence:
+		dotenv files < TARGET_ENV < get_extra_env_vars() < load(extra_vars).
 		"""
 		self.pre_load_action()
 
