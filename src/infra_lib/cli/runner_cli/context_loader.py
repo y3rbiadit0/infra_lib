@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 import sys
 from types import ModuleType
-from typing import Dict
+from typing import Dict, Optional
 
 from .infra_op_decorator import INFRA_OP_ATTR, OP_REGISTRY, InfraOp
 from ...infra.env_context import EnvironmentContext
@@ -34,7 +34,11 @@ def _import_module_from_path(module_name: str, file_path: Path) -> ModuleType:
 		raise ConfigError(f"Failed to import module {module_name} from {file_path}: {e}")
 
 
-def load_env_context_from_arg(env: InfraEnvironment, project_root: Path) -> EnvironmentContext:
+def load_env_context_from_arg(
+	env: InfraEnvironment,
+	project_root: Path,
+	extra_vars: Optional[Dict[str, str]] = None,
+) -> EnvironmentContext:
 	"""
 	Loads the environment-specific Context by finding and instantiating
 	the EnvironmentContext subclass defined in 'env.py'.
@@ -68,7 +72,10 @@ def load_env_context_from_arg(env: InfraEnvironment, project_root: Path) -> Envi
 		env_context_instance = env_context_class(
 			project_root=project_root, environment_dir=environment_dir
 		)
-		env_context_instance.load()
+		if extra_vars is None:
+			env_context_instance.load()
+		else:
+			env_context_instance.load(extra_vars=extra_vars)
 	except Exception as e:
 		raise ConfigError(
 			f"Error instantiating {env_context_class.__name__} from {environment_py_path}: {e}"

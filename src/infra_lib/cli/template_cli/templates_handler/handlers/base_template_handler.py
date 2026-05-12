@@ -60,7 +60,7 @@ class BaseTemplateHandler(ABC):
 	def _ensure_infra_gitignore(self):
 		"""Ensure infra-managed generated files stay untracked."""
 		gitignore = self.project_root / ".gitignore"
-		entry = ".infra-generated.env\n"
+		entry = "environments/*/.infra.generated.env\n"
 
 		if gitignore.exists():
 			content = gitignore.read_text()

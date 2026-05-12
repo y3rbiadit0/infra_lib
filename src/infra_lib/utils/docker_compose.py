@@ -1,4 +1,3 @@
-import json
 from dataclasses import InitVar, dataclass, field
 import logging
 from typing import Callable, List
@@ -63,16 +62,6 @@ class DockerCompose:
 		full_command = f"{self._base_command} {command}"
 		run_command(full_command, env_vars=self.env_context.host_env_vars)
 
-	def _write_infra_env_file(self) -> Path:
-		"""Write the fully resolved project environment next to the compose file."""
-		env_file = self.env_context.project_root / ".infra-generated.env"
-		lines = [
-			f"{key}={json.dumps(value)}"
-			for key, value in self.env_context.container_env_vars.items()
-		]
-		env_file.write_text("\n".join(lines) + "\n")
-		return env_file
-
 	def down(self, remove_volumes: bool = False):
 		logger.info("Stopping containers")
 		command = "down -v" if remove_volumes else "down"
@@ -84,5 +73,5 @@ class DockerCompose:
 
 	def up(self, detach: bool = True):
 		logger.info("Starting containers")
-		self._write_infra_env_file()
+		self.env_context.write_generated_env_file()
 		self._run_compose_command(f"up {'-d' if detach else ''}")

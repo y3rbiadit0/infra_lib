@@ -118,6 +118,26 @@ class TestRunCli:
 		assert "fresh-op" in result.output
 		assert "stale-op" not in result.output
 
+	@patch("infra_lib.cli.runner_cli.run_cli._execute_op_with_deps")
+	def test_should_pass_env_file_values_as_overrides(
+		self, mock_execute, runner, mock_discover_and_context, tmp_path
+	):
+		env = InfraEnvironment.local
+		env_file = tmp_path / "override.env"
+		env_file.write_text("VAR1=override\nTARGET_ENV=prod\nEMPTY\n")
+		op = infra_op_factory(target_envs=[env])
+		infra_operation(name=op.name, target_envs=[env])(op.handler)
+		_, mock_load = mock_discover_and_context
+
+		result = runner.invoke(
+			run_command,
+			["-e", env.value, "-op", op.name, "-p", tmp_path, "--env-file", env_file],
+		)
+
+		assert result.exit_code == 0
+		mock_load.assert_called_once_with(env, tmp_path, extra_vars={"VAR1": "override"})
+		mock_execute.assert_called_once()
+
 
 class TestExecuteOpWithDeps:
 	def test_should_execute_operation_without_dependencies(self, mock_context):
