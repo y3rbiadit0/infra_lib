@@ -1,4 +1,5 @@
 import abc
+import json
 import os
 from pathlib import Path
 from typing import Dict, Optional
@@ -59,6 +60,17 @@ class EnvironmentContext(abc.ABC):
 	def get_dotenv_paths(self) -> list[Path]:
 		"""Gets the ordered list of dotenv files to load for this context."""
 		return [self.get_dotenv_path()]
+
+	def get_generated_env_path(self) -> Path:
+		"""Gets the canonical infra-generated dotenv path for this context."""
+		return self.environment_dir / ".infra.generated.env"
+
+	def write_generated_env_file(self) -> Path:
+		"""Write the fully resolved environment in the environment directory."""
+		env_file = self.get_generated_env_path()
+		lines = [f"{key}={json.dumps(value)}" for key, value in self.container_env_vars.items()]
+		env_file.write_text("\n".join(lines) + "\n")
+		return env_file
 
 	def pre_load_action(self):
 		"""A hook for subclasses to run logic before config is loaded.

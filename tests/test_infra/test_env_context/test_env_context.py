@@ -117,6 +117,9 @@ class TestEnvironmentContextPaths:
 	def test_should_default_to_single_dotenv_path(self, context):
 		assert context.get_dotenv_paths() == [context.get_dotenv_path()]
 
+	def test_should_return_generated_env_path_in_environment_dir(self, context, environment_dir):
+		assert context.get_generated_env_path() == environment_dir / ".infra.generated.env"
+
 	def test_should_generate_different_paths_for_different_environments(
 		self, project_root, environment_dir
 	):
@@ -233,6 +236,22 @@ class TestEnvironmentContextLoadWithExtraVars:
 
 		assert context.container_env_vars.get("VAR1") is None
 		assert context.container_env_vars.get("VAR2") == "value2"
+
+	def test_should_write_generated_env_file_in_environment_dir(
+		self, context, populated_dotenv, environment_dir, mock_environ
+	):
+		context.load(extra_vars={"EXTRA": "extra value"})
+
+		generated_path = context.write_generated_env_file()
+
+		assert generated_path == environment_dir / ".infra.generated.env"
+		assert generated_path.read_text().splitlines() == [
+			'VAR1="value1"',
+			'VAR2="value2"',
+			'VAR3="value3"',
+			'TARGET_ENV="local"',
+			'EXTRA="extra value"',
+		]
 
 
 class TestEnvironmentContextLoadPrecedence:

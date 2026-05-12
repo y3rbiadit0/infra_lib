@@ -5,6 +5,7 @@ import inspect
 from pathlib import Path
 from typing import Set, List, Dict, Any, Type
 import click
+from dotenv import dotenv_values
 
 from .infra_op_decorator import OP_REGISTRY, InfraOp
 from .context_loader import load_env_context_from_arg, discover_ops
@@ -38,7 +39,17 @@ logger = logging.getLogger(__name__)
 	multiple=True,
 	help="Operation to run. Can be specified multiple times.",
 )
-def run_command(environment: str, project_root: Path, operations: tuple[str]):
+@click.option(
+	"--env-file",
+	type=click.Path(exists=True, file_okay=True, dir_okay=False, path_type=Path),
+	help="Dotenv file with values that override the selected environment .env.",
+)
+def run_command(
+	environment: str,
+	project_root: Path,
+	operations: tuple[str],
+	env_file: Path | None,
+):
 	"""Run infrastructure operations for a specified environment."""
 	env = InfraEnvironment(environment)
 
@@ -47,6 +58,7 @@ def run_command(environment: str, project_root: Path, operations: tuple[str]):
 		sys.path.insert(0, str(project_root.parent))
 
 	try:
+		extra_vars = _load_env_file_overrides(env_file) if env_file else None
 		operations_dir = project_root / "operations"
 		registry = discover_ops(operations_dir)
 		if not registry:
@@ -54,7 +66,7 @@ def run_command(environment: str, project_root: Path, operations: tuple[str]):
 			return
 
 		logger.info(f"Loading configuration for '{env}'")
-		env_context = load_env_context_from_arg(env, project_root)
+		env_context = load_env_context_from_arg(env, project_root, extra_vars=extra_vars)
 		logger.info(f"Loaded context for environment: {env_context.env()}")
 
 		ops_to_run: List[str]
@@ -89,6 +101,14 @@ def run_command(environment: str, project_root: Path, operations: tuple[str]):
 	except Exception as e:
 		logger.error(f"Unexpected error during run: {e}", exc_info=True)
 		sys.exit(1)
+
+
+def _load_env_file_overrides(env_file: Path) -> Dict[str, str]:
+	return {
+		key: value
+		for key, value in dotenv_values(env_file).items()
+		if value is not None and key != "TARGET_ENV"
+	}
 
 
 def _execute_op_with_deps(
